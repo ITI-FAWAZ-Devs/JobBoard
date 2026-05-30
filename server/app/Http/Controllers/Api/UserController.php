@@ -44,9 +44,14 @@ class UserController extends Controller
             'avatar' => ['sometimes', 'nullable', 'image', 'max:2048'],
             'company_name' => ['sometimes', 'nullable', 'string', 'max:255'],
             'website' => ['sometimes', 'nullable', 'url', 'max:255'],
+            'industry' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'employee_count' => ['sometimes', 'nullable', 'string', 'max:255'],
             'phone' => ['sometimes', 'nullable', 'string', 'max:255'],
             'location' => ['sometimes', 'nullable', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
+            'perks' => ['sometimes', 'nullable', 'array'],
+            'perks.*' => ['string', 'max:255'],
+            'cover_photo' => ['sometimes', 'nullable', 'image', 'max:5120'],
             'linkedin_url' => ['sometimes', 'nullable', 'url', 'max:255'],
             'skills' => ['sometimes', 'nullable', 'array'],
             'skills.*' => ['string', 'max:255'],
@@ -70,18 +75,29 @@ class UserController extends Controller
             'avatar',
         ])->all());
 
+        if ($request->hasFile('cover_photo')) {
+            $profile = $user->employerProfile;
+            if ($profile && $profile->cover_photo) {
+                Storage::disk('public')->delete($profile->cover_photo);
+            }
+
+            $validated['cover_photo'] = $request->file('cover_photo')->store('cover-photos', 'public');
+        }
+
         if ($user->isEmployer()) {
             $employerProfileData = collect($validated)->only([
                 'company_name',
                 'website',
+                'industry',
+                'employee_count',
                 'phone',
                 'location',
                 'description',
-            ])->all();
+                'perks',
+                'cover_photo',
+            ])->filter(fn ($v) => ! is_null($v))->all();
 
-            $employerProfileData['company_name'] = $employerProfileData['company_name']
-                ?? $user->employerProfile?->company_name
-                ?? '';
+            $employerProfileData['company_name'] ??= $user->employerProfile?->company_name ?? '';
 
             $user->employerProfile()->updateOrCreate(
                 ['user_id' => $user->id],
@@ -112,7 +128,7 @@ class UserController extends Controller
             );
         }
 
-        return new UserResource($user->fresh(['employerProfile', 'candidateProfile']));
+        return new UserResource($user->fresh(['employerProfile', 'candidateProfile', 'offices', 'galleryPhotos']));
     }
 
     public function updateSelf(Request $request): UserResource

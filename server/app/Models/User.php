@@ -73,6 +73,16 @@ class User extends Authenticatable
         return $this->hasMany(Education::class);
     }
 
+    public function offices(): HasMany
+    {
+        return $this->hasMany(Office::class);
+    }
+
+    public function galleryPhotos(): HasMany
+    {
+        return $this->hasMany(GalleryPhoto::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

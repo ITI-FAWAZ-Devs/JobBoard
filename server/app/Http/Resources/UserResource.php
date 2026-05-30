@@ -41,6 +41,21 @@ class UserResource extends JsonResource
                     'period' => $edu->period,
                 ]);
             }, []),
+            'offices' => $this->when($this->isEmployer(), function () {
+                return $this->offices->map(fn ($o) => [
+                    'id' => $o->id,
+                    'name' => $o->name,
+                    'address' => $o->address,
+                    'is_headquarters' => $o->is_headquarters,
+                ]);
+            }, []),
+            'gallery_photos' => $this->when($this->isEmployer(), function () {
+                return $this->galleryPhotos->map(fn ($g) => [
+                    'id' => $g->id,
+                    'photo' => $g->photo,
+                    'photo_url' => $g->photo_url,
+                ]);
+            }, []),
             'profile' => $this->when($this->isEmployer(), function () {
                 $profile = $this->employerProfile;
 
@@ -50,10 +65,15 @@ class UserResource extends JsonResource
                     'company_name' => $profile->company_name,
                     'logo' => $profile->logo,
                     'logo_url' => $profile->logo_url,
+                    'cover_photo' => $profile->cover_photo,
+                    'cover_photo_url' => $profile->cover_photo_url,
                     'website' => $profile->website,
+                    'industry' => $profile->industry,
+                    'employee_count' => $profile->employee_count,
                     'phone' => $profile->phone,
                     'location' => $profile->location,
                     'description' => $profile->description,
+                    'perks' => $profile->perks ?? [],
                     'created_at' => $profile->created_at?->format('Y-m-d H:i:s'),
                     'updated_at' => $profile->updated_at?->format('Y-m-d H:i:s'),
                 ] : null;
