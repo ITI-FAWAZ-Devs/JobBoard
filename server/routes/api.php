@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\AdminJobController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EmployerJobController;
 use App\Http\Controllers\Api\JobController;
+use App\Http\Controllers\Api\EducationController;
+use App\Http\Controllers\Api\ExperienceController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,11 +20,15 @@ Route::get('/jobs/{jobListing}', [JobController::class, 'show']);
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::match(['post', 'patch'], '/auth/me', [UserController::class, 'updateSelf']);
 
     Route::get('/users', [UserController::class, 'index']);
     Route::get('/users/{user}', [UserController::class, 'show']);
     Route::post('/users/{user}', [UserController::class, 'update']);
     Route::delete('/users/{user}', [UserController::class, 'destroy']);
+
+    Route::apiResource('experiences', ExperienceController::class)->except(['show']);
+    Route::apiResource('education', EducationController::class)->except(['show']);
 
     Route::middleware('role:employer')->prefix('employer')->group(function (): void {
         Route::get('/jobs', [EmployerJobController::class, 'index']);

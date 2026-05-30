@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -60,6 +61,16 @@ class User extends Authenticatable
     public function candidateProfile(): HasOne
     {
         return $this->hasOne(CandidateProfile::class);
+    }
+
+    public function experiences(): HasMany
+    {
+        return $this->hasMany(Experience::class);
+    }
+
+    public function education(): HasMany
+    {
+        return $this->hasMany(Education::class);
     }
 
     public function isAdmin(): bool
