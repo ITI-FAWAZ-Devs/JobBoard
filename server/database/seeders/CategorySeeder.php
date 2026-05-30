@@ -21,6 +21,7 @@ class CategorySeeder extends Seeder
         ];
 
         foreach ($categories as $category) {
+            $category['slug'] = \Illuminate\Support\Str::slug($category['name']);
             Category::create($category);
         }
     }

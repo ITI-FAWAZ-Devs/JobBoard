@@ -134,7 +134,7 @@ async function handleSave() {
 
           <div class="flex justify-end gap-3">
             <Button as-child variant="outline" class="rounded-lg border-outline-variant px-5 py-3">
-              <RouterLink to="/employee/profile">Cancel</RouterLink>
+              <RouterLink to="/employer/profile">Cancel</RouterLink>
             </Button>
             <Button class="rounded-lg bg-primary px-5 py-3 text-white hover:bg-primary/90" :disabled="isPending" type="submit">
               {{ isPending ? 'Saving...' : 'Save Changes' }}

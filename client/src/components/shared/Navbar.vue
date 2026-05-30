@@ -33,8 +33,8 @@ const user = computed<Profile>(() => (profile.value ?? {}) as Profile);
 const avatarUrl = computed(() => user.value.avatar_url || '');
 const avatarInitial = computed(() => user.value.name?.charAt(0).toUpperCase());
 const roleBasePath = computed(() => {
-  if (user.value.role === 'admin') return '/admin';
-  if (user.value.role === 'employer') return '/employee';
+  if (user.value.role === 'admin') return '/admin/dashboard';
+  if (user.value.role === 'employer') return '/employer/dashboard';
 
   return '/candidate';
 });

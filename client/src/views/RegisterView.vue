@@ -74,7 +74,10 @@ function handleRegister() {
   mutate(buildPayload(), {
     onSuccess: () => {
       toast.success('Account created successfully.');
-      router.push('/');
+      const redirectTarget = typeof route.query.redirect === 'string'
+        ? route.query.redirect
+        : '/';
+      router.push(redirectTarget);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));

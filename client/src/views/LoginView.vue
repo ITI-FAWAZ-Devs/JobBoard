@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Check, Lock, Mail } from 'lucide-vue-next';
 import { reactive } from 'vue';
 import { toast } from 'vue-sonner';
-import { RouterLink, useRouter } from 'vue-router';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
+const route = useRoute();
 const { mutate, isPending } = useLogin();
 
 const form = reactive({
@@ -37,8 +38,33 @@ function handleLogin() {
       password: form.password,
     },
     {
-      onSuccess: () => {
+      onSuccess: (res) => {
         toast.success('Logged in successfully.');
+        const redirectTarget = typeof route.query.redirect === 'string'
+          ? route.query.redirect
+          : undefined;
+        const role = res?.data?.user?.role;
+
+        if (redirectTarget) {
+          router.push(redirectTarget);
+          return;
+        }
+
+        if (role === 'admin') {
+          router.push('/admin/dashboard');
+          return;
+        }
+
+        if (role === 'employer') {
+          router.push('/employer/dashboard');
+          return;
+        }
+
+        if (role === 'candidate') {
+          router.push('/candidate/dashboard');
+          return;
+        }
+
         router.push('/');
       },
       onError: (error) => {

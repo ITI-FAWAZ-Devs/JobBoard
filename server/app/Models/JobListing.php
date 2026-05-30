@@ -51,6 +51,16 @@ class JobListing extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function applications()
+    {
+        return $this->hasMany(Application::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
     #[SearchUsingFullText(['title', 'description', 'requirements', 'benefits', 'location'])]
     public function toSearchableArray(): array
     {

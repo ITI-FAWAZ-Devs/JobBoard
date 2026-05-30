@@ -19,6 +19,11 @@ export function useRegister() {
           console.error("Failed to fetch profile after registration:", error);
         }
       }
+
+      const user = res?.data?.user;
+      if (user) {
+        localStorage.setItem("user", JSON.stringify(user));
+      }
     },
 
     onError: (err) => {
