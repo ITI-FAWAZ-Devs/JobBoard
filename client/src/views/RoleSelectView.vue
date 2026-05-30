@@ -23,7 +23,6 @@ function continueToRegister() {
 <template>
   <main
     class="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-background px-gutter py-xl text-on-background antialiased selection:bg-primary-container selection:text-on-primary-container"
-    dir="ltr"
   >
     <div class="pointer-events-none absolute left-[-10%] top-[-10%] h-[40%] w-[40%] rounded-full bg-primary-fixed-dim/20 blur-[100px]"></div>
     <div class="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[30%] w-[30%] rounded-full bg-secondary-container/20 blur-[80px]"></div>

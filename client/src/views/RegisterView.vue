@@ -86,7 +86,6 @@ function handleRegister() {
 <template>
   <main
     class="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-sm text-on-surface selection:bg-primary-container selection:text-on-primary md:p-gutter"
-    dir="ltr"
   >
     <div class="absolute inset-0 z-0">
       <div class="absolute inset-0 bg-linear-to-br from-surface-container-low to-surface-container opacity-80 mix-blend-multiply"></div>

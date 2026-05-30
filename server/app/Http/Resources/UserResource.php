@@ -22,6 +22,25 @@ class UserResource extends JsonResource
             'avatar_url' => $this->avatar_url,
             'is_active' => $this->is_active,
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'experiences' => $this->when($this->isCandidate(), function () {
+                return $this->experiences->map(fn ($exp) => [
+                    'id' => $exp->id,
+                    'title' => $exp->title,
+                    'company' => $exp->company,
+                    'location' => $exp->location,
+                    'period' => $exp->period,
+                    'description' => $exp->description,
+                    'current' => $exp->current,
+                ]);
+            }, []),
+            'education' => $this->when($this->isCandidate(), function () {
+                return $this->education->map(fn ($edu) => [
+                    'id' => $edu->id,
+                    'title' => $edu->title,
+                    'school' => $edu->school,
+                    'period' => $edu->period,
+                ]);
+            }, []),
             'profile' => $this->when($this->isEmployer(), function () {
                 $profile = $this->employerProfile;
 

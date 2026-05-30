@@ -52,6 +52,7 @@ class UserController extends Controller
             'skills.*' => ['string', 'max:255'],
             'experience_years' => ['sometimes', 'nullable', 'integer', 'min:0'],
             'bio' => ['sometimes', 'nullable', 'string'],
+            'resume' => ['sometimes', 'nullable', 'file', 'mimes:pdf,docx,doc', 'max:5120'],
         ]);
 
         if ($request->hasFile('avatar')) {
@@ -88,6 +89,14 @@ class UserController extends Controller
             );
         }
 
+        if ($request->hasFile('resume')) {
+            if ($user->candidateProfile?->resume) {
+                Storage::disk('public')->delete($user->candidateProfile->resume);
+            }
+
+            $validated['resume'] = $request->file('resume')->store('resumes', 'public');
+        }
+
         if ($user->isCandidate()) {
             $user->candidateProfile()->updateOrCreate(
                 ['user_id' => $user->id],
@@ -98,11 +107,17 @@ class UserController extends Controller
                     'experience_years',
                     'location',
                     'bio',
+                    'resume',
                 ])->all()
             );
         }
 
         return new UserResource($user->fresh(['employerProfile', 'candidateProfile']));
+    }
+
+    public function updateSelf(Request $request): UserResource
+    {
+        return $this->update($request, $request->user());
     }
 
     public function destroy(User $user): JsonResponse

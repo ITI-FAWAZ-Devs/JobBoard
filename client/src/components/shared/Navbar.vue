@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Bell, LogOut, Settings, UserRound } from 'lucide-vue-next';
+import { Bell, LogOut, Settings } from 'lucide-vue-next';
 import { RouterLink, useRouter } from 'vue-router';
 import { Button } from '../ui/button';
 import { useQueryClient } from '@tanstack/vue-query';
@@ -14,10 +14,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { BarChart3 } from '@lucide/vue';
 
 type Profile = {
   name?: string;
   email?: string;
+  role?: 'admin' | 'candidate' | 'employer';
   avatar_url?: string | null;
 };
 
@@ -29,7 +31,17 @@ const { data: profile } = useProfile(isLoggedIn.value);
 
 const user = computed<Profile>(() => (profile.value ?? {}) as Profile);
 const avatarUrl = computed(() => user.value.avatar_url || '');
-const avatarInitial = computed(() => user.value.name?.charAt(0).toUpperCase() || 'U');
+const avatarInitial = computed(() => user.value.name?.charAt(0).toUpperCase());
+const roleBasePath = computed(() => {
+  if (user.value.role === 'admin') return '/admin';
+  if (user.value.role === 'employer') return '/employee';
+
+  return '/candidate';
+});
+
+function rolePath(page: 'dashboard' | 'notifications' | 'settings') {
+  return `${roleBasePath.value}/${page}`;
+}
 
 const handleLogout = async () => {
   try {
@@ -84,7 +96,7 @@ const handleLogout = async () => {
               <img
                 v-if="avatarUrl"
                 :src="avatarUrl"
-                :alt="user.name || 'User avatar'"
+                :alt="user.name"
                 class="h-full w-full object-cover"
               />
               <span v-else class="flex h-full w-full items-center justify-center font-label-md text-label-md">
@@ -101,19 +113,19 @@ const handleLogout = async () => {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem as-child>
-              <RouterLink class="flex w-full cursor-pointer items-center gap-xs" to="/profile">
-                <UserRound class="h-4 w-4" aria-hidden="true" />
-                Profile
+              <RouterLink class="flex w-full cursor-pointer items-center gap-xs" :to="rolePath('dashboard')">
+                <BarChart3 class="h-4 w-4" aria-hidden="true" />
+                Dashboard
               </RouterLink>
             </DropdownMenuItem>
             <DropdownMenuItem as-child>
-              <RouterLink class="flex w-full cursor-pointer items-center gap-xs" to="/notifications">
+              <RouterLink class="flex w-full cursor-pointer items-center gap-xs" :to="rolePath('notifications')">
                 <Bell class="h-4 w-4" aria-hidden="true" />
                 Notifications
               </RouterLink>
             </DropdownMenuItem>
             <DropdownMenuItem as-child>
-              <RouterLink class="flex w-full cursor-pointer items-center gap-xs" to="/settings">
+              <RouterLink class="flex w-full cursor-pointer items-center gap-xs" :to="rolePath('settings')">
                 <Settings class="h-4 w-4" aria-hidden="true" />
                 Settings
               </RouterLink>

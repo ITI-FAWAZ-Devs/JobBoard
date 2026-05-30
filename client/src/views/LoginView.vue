@@ -52,7 +52,6 @@ function handleLogin() {
 <template>
   <main
     class="flex min-h-screen items-center justify-center bg-gradient-mesh p-sm text-on-surface md:p-md"
-    dir="ltr"
   >
     <section class="w-full max-w-120">
       <div class="mb-lg text-center">

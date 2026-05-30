@@ -100,7 +100,7 @@ class AuthController extends Controller
 
     public function me(Request $request): UserResource
     {
-        return new UserResource($request->user()->load(['employerProfile', 'candidateProfile']));
+        return new UserResource($request->user()->load(['employerProfile', 'candidateProfile', 'experiences', 'education']));
     }
 
     public function forgotPassword(Request $request): JsonResponse
