@@ -10,6 +10,10 @@ use App\Http\Controllers\Api\AdminCommentController;
 use App\Http\Controllers\Api\EmployerAnalyticsController;
 use App\Http\Controllers\Api\JobController;
 use App\Http\Controllers\Api\PaymentWebhookController;
+use App\Http\Controllers\Api\EducationController;
+use App\Http\Controllers\Api\ExperienceController;
+use App\Http\Controllers\Api\GalleryPhotoController;
+use App\Http\Controllers\Api\OfficeController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +28,10 @@ Route::prefix('v1')->group(function (): void {
 
     Route::post('/payments/stripe/webhook', [PaymentWebhookController::class, 'stripe']);
     Route::post('/payments/paypal/webhook', [PaymentWebhookController::class, 'paypal']);
+Route::middleware('auth:sanctum')->group(function (): void {
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::match(['post', 'patch'], '/auth/me', [UserController::class, 'updateSelf']);
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -33,6 +41,18 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/users/{user}', [UserController::class, 'show']);
         Route::post('/users/{user}', [UserController::class, 'update']);
         Route::delete('/users/{user}', [UserController::class, 'destroy']);
+    Route::apiResource('experiences', ExperienceController::class)->except(['show']);
+    Route::apiResource('education', EducationController::class)->except(['show']);
+    Route::apiResource('offices', OfficeController::class)->except(['show', 'edit', 'create']);
+    Route::apiResource('gallery-photos', GalleryPhotoController::class)->except(['show', 'edit', 'create', 'update']);
+
+    Route::middleware('role:employer')->prefix('employer')->group(function (): void {
+        Route::get('/jobs', [EmployerJobController::class, 'index']);
+        Route::post('/jobs', [EmployerJobController::class, 'store']);
+        Route::get('/jobs/{jobListing}', [EmployerJobController::class, 'show']);
+        Route::put('/jobs/{jobListing}', [EmployerJobController::class, 'update']);
+        Route::delete('/jobs/{jobListing}', [EmployerJobController::class, 'destroy']);
+    });
 
         Route::middleware('role:employer')->prefix('employer')->group(function (): void {
             Route::get('/analytics', [EmployerAnalyticsController::class, 'index']);
@@ -64,4 +84,5 @@ Route::prefix('v1')->group(function (): void {
             Route::delete('/comments/{comment}', [AdminCommentController::class, 'destroy']);
         });
     });
+});
 });

@@ -53,7 +53,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Registration successful.',
             'token' => $token,
-            'user' => new UserResource($user->load(['employerProfile', 'candidateProfile'])),
+            'user' => new UserResource($user->load(['employerProfile.candidateProfile', 'offices', 'galleryPhotos'])),
         ], 201);
     }
 
@@ -81,7 +81,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login successful.',
             'token' => $token,
-            'user' => new UserResource($user->load(['employerProfile', 'candidateProfile'])),
+            'user' => new UserResource($user->load(['employerProfile', 'candidateProfile', 'offices', 'galleryPhotos'])),
         ]);
     }
 
@@ -100,7 +100,17 @@ class AuthController extends Controller
 
     public function me(Request $request): UserResource
     {
-        return new UserResource($request->user()->load(['employerProfile', 'candidateProfile']));
+        $user = $request->user();
+
+        if ($user->isEmployer()) {
+            $user->load(['employerProfile', 'offices', 'galleryPhotos']);
+        }
+
+        if ($user->isCandidate()) {
+            $user->load(['candidateProfile', 'experiences', 'education']);
+        }
+
+        return new UserResource($user);
     }
 
     public function forgotPassword(Request $request): JsonResponse

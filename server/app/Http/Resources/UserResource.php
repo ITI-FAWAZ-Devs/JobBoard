@@ -35,6 +35,40 @@ class UserResource extends JsonResource
             'suspended_at' => $this->suspended_at?->format('Y-m-d H:i:s'),
             'banned_at' => $this->banned_at?->format('Y-m-d H:i:s'),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'experiences' => $this->when($this->isCandidate(), function () {
+                return $this->experiences->map(fn ($exp) => [
+                    'id' => $exp->id,
+                    'title' => $exp->title,
+                    'company' => $exp->company,
+                    'location' => $exp->location,
+                    'period' => $exp->period,
+                    'description' => $exp->description,
+                    'current' => $exp->current,
+                ]);
+            }, []),
+            'education' => $this->when($this->isCandidate(), function () {
+                return $this->education->map(fn ($edu) => [
+                    'id' => $edu->id,
+                    'title' => $edu->title,
+                    'school' => $edu->school,
+                    'period' => $edu->period,
+                ]);
+            }, []),
+            'offices' => $this->when($this->isEmployer(), function () {
+                return $this->offices->map(fn ($o) => [
+                    'id' => $o->id,
+                    'name' => $o->name,
+                    'address' => $o->address,
+                    'is_headquarters' => $o->is_headquarters,
+                ]);
+            }, []),
+            'gallery_photos' => $this->when($this->isEmployer(), function () {
+                return $this->galleryPhotos->map(fn ($g) => [
+                    'id' => $g->id,
+                    'photo' => $g->photo,
+                    'photo_url' => $g->photo_url,
+                ]);
+            }, []),
             'profile' => $this->when($this->isEmployer(), function () {
                 $profile = $this->employerProfile;
 
@@ -44,10 +78,15 @@ class UserResource extends JsonResource
                     'company_name' => $profile->company_name,
                     'logo' => $profile->logo,
                     'logo_url' => $profile->logo_url,
+                    'cover_photo' => $profile->cover_photo,
+                    'cover_photo_url' => $profile->cover_photo_url,
                     'website' => $profile->website,
+                    'industry' => $profile->industry,
+                    'employee_count' => $profile->employee_count,
                     'phone' => $profile->phone,
                     'location' => $profile->location,
                     'description' => $profile->description,
+                    'perks' => $profile->perks ?? [],
                     'created_at' => $profile->created_at?->format('Y-m-d H:i:s'),
                     'updated_at' => $profile->updated_at?->format('Y-m-d H:i:s'),
                 ] : null;
