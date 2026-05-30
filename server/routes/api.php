@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\EmployerJobController;
 use App\Http\Controllers\Api\JobController;
 use App\Http\Controllers\Api\EducationController;
 use App\Http\Controllers\Api\ExperienceController;
+use App\Http\Controllers\Api\GalleryPhotoController;
+use App\Http\Controllers\Api\OfficeController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +31,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::apiResource('experiences', ExperienceController::class)->except(['show']);
     Route::apiResource('education', EducationController::class)->except(['show']);
+    Route::apiResource('offices', OfficeController::class)->except(['show', 'edit', 'create']);
+    Route::apiResource('gallery-photos', GalleryPhotoController::class)->except(['show', 'edit', 'create', 'update']);
 
     Route::middleware('role:employer')->prefix('employer')->group(function (): void {
         Route::get('/jobs', [EmployerJobController::class, 'index']);
