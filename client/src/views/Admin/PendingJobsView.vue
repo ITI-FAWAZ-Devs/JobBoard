@@ -3,7 +3,6 @@ import { computed, ref } from "vue";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { CheckCircle2, Clock3, XCircle } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
-import AdminLayout from "@/components/admin/AdminLayout.vue";
 import {
   approveJobApi,
   getPendingJobsApi,
@@ -62,14 +61,11 @@ const submitReject = (jobId: number) => {
 </script>
 
 <template>
-  <AdminLayout
-    title="Pending Job Approvals"
-    subtitle="Review job listings awaiting admin approval."
-  >
-    <template #actions>
+  <div>
+    <div class="mb-md flex flex-wrap items-center justify-end gap-sm">
       <Button variant="outline" size="sm">Export Data</Button>
       <Button size="sm">New Report</Button>
-    </template>
+    </div>
 
     <div class="grid gap-lg">
       <div class="grid gap-md md:grid-cols-3">
@@ -204,5 +200,5 @@ const submitReject = (jobId: number) => {
         </div>
       </section>
     </div>
-  </AdminLayout>
+  </div>
 </template>

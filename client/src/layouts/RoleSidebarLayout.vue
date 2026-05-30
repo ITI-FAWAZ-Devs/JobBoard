@@ -4,13 +4,12 @@ import { useRoute } from 'vue-router';
 import {
   BarChart3,
   BriefcaseBusiness,
+  CreditCard,
   FileText,
   Heart,
   Mail,
   Settings,
-  Shield,
   User,
-  Users,
 } from 'lucide-vue-next';
 import Sidebar from '@/components/shared/Sidebar.vue';
 import { useAuth } from '@/composables/useAuth';
@@ -19,12 +18,6 @@ const route = useRoute();
 const { user } = useAuth();
 
 const navItemsBySection = {
-  admin: [
-    { label: 'Dashboard', icon: BarChart3, to: '/admin/dashboard' },
-    { label: 'Users', icon: Users, to: '/admin/users' },
-    { label: 'Moderation', icon: Shield, to: '/admin/moderation' },
-    { label: 'Settings', icon: Settings, to: '/admin/settings' },
-  ],
   candidate: [
     { label: 'Dashboard', icon: BarChart3, to: '/candidate/dashboard' },
     { label: 'Browse Jobs', icon: BriefcaseBusiness, to: '/candidate/jobs' },
@@ -33,20 +26,18 @@ const navItemsBySection = {
     { label: 'Saved Jobs', icon: Heart, to: '/candidate/saved' },
     { label: 'Settings', icon: Settings, to: '/candidate/settings' },
   ],
-  employee: [
-    { label: 'Dashboard', icon: BarChart3, to: '/employee/dashboard' },
-    { label: 'Applications', icon: BriefcaseBusiness, to: '/employee/applications' },
-    { label: 'Job Postings', icon: BriefcaseBusiness, to: '/employee/jobs' },
-    { label: 'Analytics', icon: BarChart3, to: '/employee/analytics' },
-    { label: 'Messages', icon: Mail, to: '/employee/messages' },
-    { label: 'Profile', icon: User, to: '/employee/profile' },
-    { label: 'Settings', icon: Settings, to: '/employee/settings' },
+  employer: [
+    { label: 'Dashboard', icon: BarChart3, to: '/employer/dashboard' },
+    { label: 'Analytics', icon: BarChart3, to: '/employer/analytics' },
+    { label: 'Checkout', icon: CreditCard, to: '/employer/checkout' },
+    { label: 'Profile', icon: User, to: '/employer/profile' },
+    { label: 'Messages', icon: Mail, to: '/employer/messages' },
+    { label: 'Settings', icon: Settings, to: '/employer/settings' },
   ],
 } as const;
 
 const section = computed<keyof typeof navItemsBySection>(() => {
-  if (route.path.startsWith('/admin')) return 'admin';
-  if (route.path.startsWith('/employee')) return 'employee';
+  if (route.path.startsWith('/employer')) return 'employer';
 
   return 'candidate';
 });

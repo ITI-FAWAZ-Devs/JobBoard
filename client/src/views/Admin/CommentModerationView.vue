@@ -3,7 +3,6 @@ import { computed, ref } from "vue";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { EyeOff, Eye, Trash2, Filter, AlertTriangle } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
-import AdminLayout from "@/components/admin/AdminLayout.vue";
 import { toast } from "vue-sonner";
 import {
   getAdminCommentsApi,
@@ -54,11 +53,8 @@ const confirmDelete = (comment: Comment) => {
 </script>
 
 <template>
-  <AdminLayout
-    title="Comment Moderation"
-    subtitle="Review user comments, hide inappropriate content, or delete spam."
-  >
-    <template #actions>
+  <div>
+    <div class="mb-md flex flex-wrap items-center justify-end gap-sm">
       <Button
         variant="outline"
         @click="showOnlyReported = !showOnlyReported"
@@ -67,7 +63,7 @@ const confirmDelete = (comment: Comment) => {
         <Filter class="h-4 w-4 mr-2" aria-hidden="true" />
         {{ showOnlyReported ? 'Showing Reported' : 'Filter Reported' }}
       </Button>
-    </template>
+    </div>
 
     <section class="rounded-2xl border border-outline-variant bg-card shadow-soft">
       <header class="flex items-center justify-between border-b border-outline-variant px-lg py-md">
@@ -189,5 +185,5 @@ const confirmDelete = (comment: Comment) => {
         </div>
       </div>
     </section>
-  </AdminLayout>
+  </div>
 </template>

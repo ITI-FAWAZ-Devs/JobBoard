@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { Clock3, Flag, ShieldAlert, Users2 } from "lucide-vue-next";
 import { RouterLink } from "vue-router";
 import { Button } from "@/components/ui/button";
-import AdminLayout from "@/components/admin/AdminLayout.vue";
 import {
   approveJobApi,
   getPendingJobsApi,
@@ -84,14 +83,11 @@ const recentUsers = [
 </script>
 
 <template>
-  <AdminLayout
-    title="Platform Overview"
-    subtitle="Monitor activity and manage content across WorkHive."
-  >
-    <template #actions>
+  <div>
+    <div class="mb-md flex flex-wrap items-center justify-end gap-sm">
       <Button variant="outline" size="sm">Export Data</Button>
       <Button size="sm">New Report</Button>
-    </template>
+    </div>
 
     <div class="grid gap-lg">
       <div class="grid gap-md md:grid-cols-3">
@@ -326,5 +322,5 @@ const recentUsers = [
         </div>
       </div>
     </div>
-  </AdminLayout>
+  </div>
 </template>

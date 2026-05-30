@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { getProfileApi } from "@/api/profile";
-import type { RouteLocationNormalized, NavigationGuardNext } from "vue-router";
+import type { RouteLocationNormalized } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 
 const router = createRouter({
@@ -31,44 +30,118 @@ const router = createRouter({
     },
     {
       path: "/admin",
-      name: "AdminDashboard",
-      component: () => import("@/views/Admin/DashboardView.vue"),
+      component: () => import("@/components/admin/AdminLayout.vue"),
       meta: { requiresAuth: true, requiresRole: "admin" },
+      redirect: "/admin/dashboard",
+      children: [
+        {
+          path: "dashboard",
+          name: "AdminDashboard",
+          component: () => import("@/views/Admin/DashboardView.vue"),
+          meta: {
+            pageTitle: "Platform Overview",
+            pageSubtitle: "Monitor activity and manage content across WorkHive.",
+          },
+        },
+        {
+          path: "pending-jobs",
+          name: "AdminPendingJobs",
+          component: () => import("@/views/Admin/PendingJobsView.vue"),
+          meta: {
+            pageTitle: "Pending Job Approvals",
+            pageSubtitle: "Review job listings awaiting admin approval.",
+          },
+        },
+        {
+          path: "users",
+          name: "AdminUsers",
+          component: () => import("@/views/Admin/UserManagementView.vue"),
+          meta: {
+            pageTitle: "User Management",
+            pageSubtitle: "Review accounts, enforce policy, and keep the platform safe.",
+          },
+        },
+        {
+          path: "comments",
+          name: "AdminComments",
+          component: () => import("@/views/Admin/CommentModerationView.vue"),
+          meta: {
+            pageTitle: "Comment Moderation",
+            pageSubtitle: "Review user comments, hide inappropriate content, or delete spam.",
+          },
+        },
+        {
+          path: "profile",
+          name: "AdminProfile",
+          component: () => import("@/views/Admin/ProfileView.vue"),
+          meta: {
+            pageTitle: "Admin Profile",
+            pageSubtitle: "Manage your administrator account.",
+          },
+        },
+        {
+          path: "notifications",
+          name: "AdminNotifications",
+          component: () => import("@/views/Admin/NotificationsView.vue"),
+          meta: {
+            pageTitle: "Admin Notifications",
+            pageSubtitle: "Review platform alerts and activity updates.",
+          },
+        },
+        {
+          path: "settings",
+          name: "AdminSettings",
+          component: () => import("@/views/Admin/SettingsView.vue"),
+          meta: {
+            pageTitle: "Admin Settings",
+            pageSubtitle: "Configure platform administration preferences.",
+          },
+        },
+      ],
     },
     {
-      path: "/admin/pending-jobs",
-      name: "AdminPendingJobs",
-      component: () => import("@/views/Admin/PendingJobsView.vue"),
-      meta: { requiresAuth: true, requiresRole: "admin" },
-    },
-    {
-      path: "/admin/users",
-      name: "AdminUsers",
-      component: () => import("@/views/Admin/UserManagementView.vue"),
-      meta: { requiresAuth: true, requiresRole: "admin" },
-    },
-    {
-      path: "/employer/analytics",
-      name: "EmployerAnalytics",
-      component: () => import("@/views/employer/AnalyticsView.vue"),
+      path: "/employer",
+      component: () => import("@/layouts/RoleSidebarLayout.vue"),
       meta: { requiresAuth: true, requiresRole: "employer" },
-    },
-    {
-      path: "/employer/checkout",
-      name: "EmployerCheckout",
-      component: () => import("@/views/Employee/CheckoutView.vue"),
-      meta: { requiresAuth: true, requiresRole: "employer" },
-    },
-    {
-      path: "/admin/comments",
-      name: "AdminComments",
-      component: () => import("@/views/admin/CommentModerationView.vue"),
-      meta: { requiresAuth: true, requiresRole: "admin" },
+      redirect: "/employer/dashboard",
+      children: [
+        {
+          path: "dashboard",
+          name: "EmployerDashboard",
+          component: () => import("@/views/Employee/DashboardView.vue"),
+        },
+        {
+          path: "analytics",
+          name: "EmployerAnalytics",
+          component: () => import("@/views/employer/AnalyticsView.vue"),
+        },
+        {
+          path: "checkout",
+          name: "EmployerCheckout",
+          component: () => import("@/views/Employee/CheckoutView.vue"),
+        },
+        {
+          path: "profile",
+          name: "EmployerProfile",
+          component: () => import("@/views/Employee/ProfileView.vue"),
+        },
+        {
+          path: "notifications",
+          name: "EmployerNotifications",
+          component: () => import("@/views/Employee/NotificationsView.vue"),
+        },
+        {
+          path: "settings",
+          name: "EmployerSettings",
+          component: () => import("@/views/Employee/SettingsView.vue"),
+        },
+      ],
     },
     {
       path: "/candidate",
       component: () => import("@/layouts/RoleSidebarLayout.vue"),
-      meta: { requiresAuth: true, requiredRole: "candidate" },
+      meta: { requiresAuth: true, requiresRole: "candidate" },
+      redirect: "/candidate/dashboard",
       children: [
         {
           path: "dashboard",
@@ -89,33 +162,6 @@ const router = createRouter({
           path: "settings",
           name: "CandidateSettings",
           component: () => import("@/views/Candidate/SettingsView.vue"),
-        },
-      ],
-    },
-    {
-      path: "/employee",
-      component: () => import("@/layouts/RoleSidebarLayout.vue"),
-      meta: { requiresAuth: true, requiredRole: "employer" },
-      children: [
-        {
-          path: "dashboard",
-          name: "EmployeeDashboard",
-          component: () => import("@/views/Employee/DashboardView.vue"),
-        },
-        {
-          path: "profile",
-          name: "EmployeeProfile",
-          component: () => import("@/views/Employee/ProfileView.vue"),
-        },
-        {
-          path: "notifications",
-          name: "EmployeeNotifications",
-          component: () => import("@/views/Employee/NotificationsView.vue"),
-        },
-        {
-          path: "settings",
-          name: "EmployeeSettings",
-          component: () => import("@/views/Employee/SettingsView.vue"),
         },
       ],
     },
@@ -142,88 +188,54 @@ const setStoredUser = (user: unknown) => {
   localStorage.setItem("user", JSON.stringify(user));
 };
 
+const getRequiredRole = (to: RouteLocationNormalized) =>
+  (to.meta.requiresRole as string | undefined) ??
+  (to.meta.requiredRole as string | undefined);
+
+const getRoleHomePath = (role?: string | null) => {
+  if (role === "admin") return "/admin/dashboard";
+  if (role === "employer") return "/employer/dashboard";
+  if (role === "candidate") return "/candidate/dashboard";
+  return "/";
+};
+
 router.beforeEach(async (to) => {
   const token = localStorage.getItem("token");
-  let user = getStoredUser();
+  const { user, userRole, fetchUserProfile, setUser } = useAuth();
   const requiresAuth = Boolean(to.meta?.requiresAuth);
   const requiresGuest = Boolean(to.meta?.requiresGuest);
-  const requiredRole = (to.meta?.requiresRole as string | undefined) ?? undefined;
+  const requiredRole = getRequiredRole(to);
 
   if (requiresGuest && token) {
-    return { path: "/" };
+    const storedUser = getStoredUser();
+    return { path: getRoleHomePath(storedUser?.role ?? userRole.value) };
   }
 
   if (requiresAuth && !token) {
     return { path: "/sign-in", query: { redirect: to.fullPath } };
   }
 
-  if (token && !user) {
-    try {
-      user = await getProfileApi();
-      setStoredUser(user);
-    } catch {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      if (requiresAuth) {
+  if (token && !user.value) {
+    const storedUser = getStoredUser();
+    if (storedUser) {
+      setUser(storedUser);
+    } else {
+      try {
+        await fetchUserProfile();
+        setStoredUser(user.value);
+      } catch {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         return { path: "/sign-in", query: { redirect: to.fullPath } };
       }
     }
   }
 
-  if (requiredRole && user?.role !== requiredRole) {
+  if (requiredRole && userRole.value !== requiredRole) {
     return { path: "/" };
   }
 
   return true;
 });
-// Route guards
-router.beforeEach(
-  async (
-    to: RouteLocationNormalized,
-    from: RouteLocationNormalized,
-    next: NavigationGuardNext,
-  ) => {
-    const { user, userRole, fetchUserProfile } = useAuth();
-
-    // Check if route requires authentication
-    if (to.meta.requiresAuth) {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        next({ name: "Login", query: { redirect: to.fullPath } });
-        return;
-      }
-
-      // Fetch user profile if not already fetched
-      if (!user.value) {
-        try {
-          await fetchUserProfile();
-        } catch (error) {
-          console.error("Failed to fetch profile:", error);
-          next({ name: "Login", query: { redirect: to.fullPath } });
-          return;
-        }
-      }
-
-      // Check if user has the required role
-      const requiredRole = to.meta.requiredRole as string;
-      if (userRole.value !== requiredRole) {
-        next({ name: "home" });
-        return;
-      }
-    }
-
-    // Check if route requires guest (not authenticated)
-    if (to.meta.requiresGuest) {
-      const token = localStorage.getItem("token");
-      if (token) {
-        next({ name: "home" });
-        return;
-      }
-    }
-
-    next();
-  },
-);
 
 export default router;

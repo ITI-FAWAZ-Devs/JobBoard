@@ -3,7 +3,6 @@ import { computed, ref } from "vue";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { Ban, Shield, UserCheck } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
-import AdminLayout from "@/components/admin/AdminLayout.vue";
 import {
   activateUserApi,
   banUserApi,
@@ -71,11 +70,8 @@ const confirmBan = (user: UserSummary) => {
 </script>
 
 <template>
-  <AdminLayout
-    title="User Management"
-    subtitle="Review accounts, enforce policy, and keep the platform safe."
-  >
-    <template #actions>
+  <div>
+    <div class="mb-md flex flex-wrap items-center justify-end gap-sm">
       <div class="relative">
         <input
           v-model="search"
@@ -84,7 +80,7 @@ const confirmBan = (user: UserSummary) => {
           type="text"
         />
       </div>
-    </template>
+    </div>
 
     <section class="rounded-2xl border border-outline-variant bg-card shadow-soft">
       <header class="flex items-center justify-between border-b border-outline-variant px-lg py-md">
@@ -173,5 +169,5 @@ const confirmBan = (user: UserSummary) => {
         </table>
       </div>
     </section>
-  </AdminLayout>
+  </div>
 </template>

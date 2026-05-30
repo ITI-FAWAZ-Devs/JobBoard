@@ -1,25 +1,24 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { RouterLink, useRoute } from "vue-router";
+import { RouterLink, RouterView, useRoute } from "vue-router";
 import {
-  LayoutDashboard,
   ClipboardCheck,
-  Users,
+  Flag,
   HelpCircle,
+  LayoutDashboard,
   Settings,
+  Users,
 } from "lucide-vue-next";
 
-const props = defineProps<{
-  title: string;
-  subtitle?: string;
-}>();
-
 const route = useRoute();
+
+const pageTitle = computed(() => (route.meta.pageTitle as string) ?? "Admin");
+const pageSubtitle = computed(() => route.meta.pageSubtitle as string | undefined);
 
 const navItems = computed(() => [
   {
     label: "Dashboard",
-    to: "/admin",
+    to: "/admin/dashboard",
     icon: LayoutDashboard,
   },
   {
@@ -32,9 +31,15 @@ const navItems = computed(() => [
     to: "/admin/users",
     icon: Users,
   },
+  {
+    label: "Comments",
+    to: "/admin/comments",
+    icon: Flag,
+  },
 ]);
 
-const isActive = (path: string) => route.path === path;
+const isActive = (path: string) =>
+  route.path === path || route.path.startsWith(`${path}/`);
 </script>
 
 <template>
@@ -69,13 +74,14 @@ const isActive = (path: string) => route.path === path;
             <HelpCircle class="h-4 w-4" aria-hidden="true" />
             Help Center
           </button>
-          <button
+          <RouterLink
+            to="/admin/settings"
             class="flex w-full items-center gap-sm rounded-lg px-sm py-xs text-sm font-medium text-on-surface-variant transition hover:bg-surface-container-low"
-            type="button"
+            :class="isActive('/admin/settings') ? 'bg-primary/10 text-primary' : ''"
           >
             <Settings class="h-4 w-4" aria-hidden="true" />
             Settings
-          </button>
+          </RouterLink>
         </div>
       </aside>
 
@@ -83,19 +89,16 @@ const isActive = (path: string) => route.path === path;
         <header class="px-lg pb-md pt-lg">
           <div class="flex flex-wrap items-center justify-between gap-md">
             <div>
-              <h1 class="text-2xl font-semibold text-on-surface">{{ props.title }}</h1>
-              <p v-if="props.subtitle" class="text-sm text-on-surface-variant">
-                {{ props.subtitle }}
+              <h1 class="text-2xl font-semibold text-on-surface">{{ pageTitle }}</h1>
+              <p v-if="pageSubtitle" class="text-sm text-on-surface-variant">
+                {{ pageSubtitle }}
               </p>
-            </div>
-            <div class="flex items-center gap-sm">
-              <slot name="actions" />
             </div>
           </div>
         </header>
 
         <main class="flex-1 px-lg pb-lg">
-          <slot />
+          <RouterView />
         </main>
       </div>
     </div>

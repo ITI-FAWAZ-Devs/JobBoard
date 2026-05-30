@@ -51,12 +51,17 @@ function handleLogin() {
         }
 
         if (role === 'admin') {
-          router.push('/admin');
+          router.push('/admin/dashboard');
           return;
         }
 
         if (role === 'employer') {
-          router.push('/employer/analytics');
+          router.push('/employer/dashboard');
+          return;
+        }
+
+        if (role === 'candidate') {
+          router.push('/candidate/dashboard');
           return;
         }
 

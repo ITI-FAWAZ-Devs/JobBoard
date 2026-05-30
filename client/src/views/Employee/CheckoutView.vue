@@ -3,7 +3,6 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue"
 import { useMutation, useQuery } from "@tanstack/vue-query";
 import { loadStripe, type Stripe, type StripeCardElement, type StripeElements } from "@stripe/stripe-js";
 import { ShieldCheck } from "lucide-vue-next";
-import EmployerLayout from "@/components/employer/EmployerLayout.vue";
 import { Button } from "@/components/ui/button";
 import {
   createStripeIntentApi,
@@ -193,13 +192,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <EmployerLayout
-    title="Checkout"
-    subtitle="Select a candidate, choose a payment method, and unlock contact details."
-  >
-    <template #actions>
+  <div>
+    <div class="mb-md flex flex-wrap items-center justify-end gap-sm">
       <Button size="sm">Post a Job</Button>
-    </template>
+    </div>
 
     <div class="grid gap-lg lg:grid-cols-[minmax(0,1fr)_320px]">
       <div class="grid gap-lg">
@@ -354,5 +350,5 @@ onBeforeUnmount(() => {
         </section>
       </div>
     </div>
-  </EmployerLayout>
+  </div>
 </template>
