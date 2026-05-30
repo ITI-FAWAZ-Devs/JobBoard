@@ -6,10 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\RejectJobRequest;
 use App\Http\Resources\JobListingResource;
 use App\Models\JobListing;
+use Illuminate\Http\JsonResponse;
 
 class AdminJobController extends Controller
 {
-    public function pending()
+    public function pending(): JsonResponse
     {
         $this->authorize('viewAny', JobListing::class);
 
@@ -18,15 +19,25 @@ class AdminJobController extends Controller
             ->latest()
             ->paginate(15);
 
-        return JobListingResource::collection($jobs);
+        $payload = JobListingResource::collection($jobs)->response()->getData(true);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Pending jobs fetched successfully.',
+            'data' => $payload,
+        ]);
     }
 
-    public function approve(JobListing $jobListing)
+    public function approve(JobListing $jobListing): JsonResponse
     {
-        $this->authorize('viewAny', JobListing::class);
+        $this->authorize('approve', $jobListing);
 
         if ($jobListing->status !== 'pending') {
-            return response()->json(['message' => 'Job listing is not pending approval.'], 422);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Job listing is not pending approval.',
+                'data' => null,
+            ], 422);
         }
 
         $jobListing->update([
@@ -37,15 +48,23 @@ class AdminJobController extends Controller
 
         $jobListing->load(['employerProfile', 'category']);
 
-        return new JobListingResource($jobListing);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Job listing approved successfully.',
+            'data' => (new JobListingResource($jobListing))->resolve(),
+        ]);
     }
 
-    public function reject(RejectJobRequest $request, JobListing $jobListing)
+    public function reject(RejectJobRequest $request, JobListing $jobListing): JsonResponse
     {
-        $this->authorize('viewAny', JobListing::class);
+        $this->authorize('reject', $jobListing);
 
         if ($jobListing->status !== 'pending') {
-            return response()->json(['message' => 'Job listing is not pending approval.'], 422);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Job listing is not pending approval.',
+                'data' => null,
+            ], 422);
         }
 
         $jobListing->update([
@@ -55,6 +74,10 @@ class AdminJobController extends Controller
 
         $jobListing->load(['employerProfile', 'category']);
 
-        return new JobListingResource($jobListing);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Job listing rejected successfully.',
+            'data' => (new JobListingResource($jobListing))->resolve(),
+        ]);
     }
 }

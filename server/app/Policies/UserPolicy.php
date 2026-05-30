@@ -25,4 +25,19 @@ class UserPolicy
     {
         return $authUser->is($user) || $authUser->isAdmin();
     }
+
+    public function suspend(User $authUser, User $user): bool
+    {
+        return $authUser->isAdmin() && ! $authUser->is($user);
+    }
+
+    public function ban(User $authUser, User $user): bool
+    {
+        return $authUser->isAdmin() && ! $authUser->is($user);
+    }
+
+    public function activate(User $authUser, User $user): bool
+    {
+        return $authUser->isAdmin() && ! $authUser->is($user);
+    }
 }

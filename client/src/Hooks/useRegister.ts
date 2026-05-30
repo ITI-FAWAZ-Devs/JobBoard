@@ -10,6 +10,11 @@ export function useRegister() {
       if (token) {
         localStorage.setItem("token", token);
       }
+
+      const user = res?.data?.user;
+      if (user) {
+        localStorage.setItem("user", JSON.stringify(user));
+      }
     },
 
     onError: (err) => {

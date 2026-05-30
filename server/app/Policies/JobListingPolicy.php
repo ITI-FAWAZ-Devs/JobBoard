@@ -9,7 +9,7 @@ class JobListingPolicy
 {
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->isAdmin();
     }
 
     public function view(?User $user, JobListing $jobListing): bool
@@ -32,5 +32,15 @@ class JobListingPolicy
     public function delete(User $user, JobListing $jobListing): bool
     {
         return $this->update($user, $jobListing);
+    }
+
+    public function approve(User $user, JobListing $jobListing): bool
+    {
+        return $user->isAdmin();
+    }
+
+    public function reject(User $user, JobListing $jobListing): bool
+    {
+        return $user->isAdmin();
     }
 }

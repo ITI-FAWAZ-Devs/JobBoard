@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -26,6 +27,8 @@ class User extends Authenticatable
         'role',
         'avatar',
         'is_active',
+        'suspended_at',
+        'banned_at',
     ];
 
     /**
@@ -49,6 +52,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'suspended_at' => 'datetime',
+            'banned_at' => 'datetime',
         ];
     }
 
@@ -60,6 +65,16 @@ class User extends Authenticatable
     public function candidateProfile(): HasOne
     {
         return $this->hasOne(CandidateProfile::class);
+    }
+
+    public function paymentsAsEmployer(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'employer_id');
+    }
+
+    public function paymentsAsCandidate(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'candidate_id');
     }
 
     public function isAdmin(): bool

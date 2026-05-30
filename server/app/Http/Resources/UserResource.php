@@ -14,6 +14,16 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $status = 'active';
+
+        if ($this->banned_at) {
+            $status = 'banned';
+        } elseif ($this->suspended_at) {
+            $status = 'suspended';
+        } elseif (! $this->is_active) {
+            $status = 'inactive';
+        }
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -21,6 +31,9 @@ class UserResource extends JsonResource
             'role' => $this->role,
             'avatar_url' => $this->avatar_url,
             'is_active' => $this->is_active,
+            'status' => $status,
+            'suspended_at' => $this->suspended_at?->format('Y-m-d H:i:s'),
+            'banned_at' => $this->banned_at?->format('Y-m-d H:i:s'),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'profile' => $this->when($this->isEmployer(), function () {
                 $profile = $this->employerProfile;
