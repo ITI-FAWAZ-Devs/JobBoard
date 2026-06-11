@@ -41,12 +41,12 @@ const candidatesQuery = useQuery({
 });
 
 const jobs = computed<JobListing[]>(() => {
-  const payload = jobsQuery.data;
+  const payload = jobsQuery.data.value;
   if (Array.isArray(payload)) return payload as JobListing[];
   return payload?.data?.data ?? [];
 });
 
-const candidates = computed<CandidateSummary[]>(() => candidatesQuery.data?.data?.data ?? []);
+const candidates = computed<CandidateSummary[]>(() => candidatesQuery.data.value?.data?.data ?? []);
 
 const selectedCandidate = computed(() =>
   candidates.value.find((c) => c.id === selectedCandidateId.value),

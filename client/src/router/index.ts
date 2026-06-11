@@ -11,6 +11,21 @@ const router = createRouter({
       component: () => import("@/views/HomeView.vue"),
     },
     {
+      path: "/jobs",
+      name: "Jobs",
+      component: () => import("@/views/JobsView.vue"),
+    },
+    {
+      path: "/jobs/:id",
+      name: "JobDetail",
+      component: () => import("@/views/JobDetailView.vue"),
+    },
+    {
+      path: "/companies",
+      name: "Companies",
+      component: () => import("@/views/CompaniesView.vue"),
+    },
+    {
       path: "/sign-in",
       name: "Login",
       component: () => import("@/views/LoginView.vue"),
@@ -104,6 +119,21 @@ const router = createRouter({
           component: () => import("@/views/Employee/AnalyticsView.vue"),
         },
         {
+          path: "jobs/create",
+          name: "EmployerJobCreate",
+          component: () => import("@/views/Employee/JobFormView.vue"),
+        },
+        {
+          path: "jobs/:id/edit",
+          name: "EmployerJobEdit",
+          component: () => import("@/views/Employee/JobFormView.vue"),
+        },
+        {
+          path: "applications",
+          name: "EmployerApplications",
+          component: () => import("@/views/Employee/ApplicationsInboxView.vue"),
+        },
+        {
           path: "checkout",
           name: "EmployerCheckout",
           component: () => import("@/views/Employee/CheckoutView.vue"),
@@ -137,9 +167,24 @@ const router = createRouter({
           component: () => import("@/views/Candidate/DashboardView.vue"),
         },
         {
+          path: "jobs",
+          name: "CandidateJobs",
+          component: () => import("@/views/JobsView.vue"),
+        },
+        {
+          path: "applications",
+          name: "CandidateApplications",
+          component: () => import("@/views/Candidate/ApplicationsView.vue"),
+        },
+        {
           path: "profile",
           name: "CandidateProfile",
           component: () => import("@/views/Candidate/ProfileView.vue"),
+        },
+        {
+          path: "saved",
+          name: "CandidateSavedJobs",
+          component: () => import("@/views/Candidate/SavedJobsView.vue"),
         },
         {
           path: "notifications",

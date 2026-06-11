@@ -104,7 +104,7 @@ class DemoDataSeeder extends Seeder
         }
 
         // 5. Applications & Comments
-        $statuses = ['pending', 'reviewed', 'interviewed', 'accepted', 'rejected'];
+        $statuses = ['pending', 'reviewed', 'interviewed', 'accepted', 'rejected', 'paid'];
         
         foreach ($jobs as $job) {
             // Add some applications
@@ -112,16 +112,37 @@ class DemoDataSeeder extends Seeder
             $jobCandidates = collect($candidates)->random($applicantCount);
 
             foreach ($jobCandidates as $candidate) {
-                Application::firstOrCreate(
+                $status = $statuses[array_rand($statuses)];
+
+                $app = Application::firstOrCreate(
                     [
                         'job_listing_id' => $job->id,
                         'candidate_profile_id' => $candidate->candidateProfile->id ?? $candidate->id, // Use profile ID, but fallback just in case
                     ],
                     [
                         'cover_letter' => 'I am very interested in this role.',
-                        'status' => $statuses[array_rand($statuses)],
+                        'status' => $status,
                     ]
                 );
+
+                if ($status === 'paid') {
+                    \App\Models\Payment::firstOrCreate(
+                        [
+                            'application_id' => $app->id,
+                        ],
+                        [
+                            'employer_id' => $employerUser->id,
+                            'candidate_id' => $candidate->id,
+                            'job_id' => $job->id,
+                            'provider' => 'stripe',
+                            'amount' => 49.00,
+                            'currency' => 'usd',
+                            'status' => 'paid',
+                            'stripe_payment_intent_id' => 'pi_fake_' . \Illuminate\Support\Str::random(16),
+                            'paid_at' => now(),
+                        ]
+                    );
+                }
             }
 
             // Add some comments
@@ -138,6 +159,70 @@ class DemoDataSeeder extends Seeder
                     'is_hidden' => $isHidden,
                 ]);
             }
+        }
+
+        // 6. Seed Notifications for Testing
+        $candidate1 = User::where('email', 'candidate1@demo.com')->first();
+        if ($candidate1) {
+            \Illuminate\Support\Facades\DB::table('notifications')->insert([
+                [
+                    'id' => \Illuminate\Support\Str::uuid()->toString(),
+                    'type' => 'App\Notifications\JobStatusChanged',
+                    'notifiable_type' => 'App\Models\User',
+                    'notifiable_id' => $candidate1->id,
+                    'data' => json_encode([
+                        'job_id' => 1,
+                        'job_title' => 'Senior Frontend Engineer',
+                        'status' => 'approved',
+                        'reason' => null,
+                    ]),
+                    'read_at' => null,
+                    'created_at' => now()->subHours(2)->format('Y-m-d H:i:s'),
+                    'updated_at' => now()->subHours(2)->format('Y-m-d H:i:s'),
+                ],
+                [
+                    'id' => \Illuminate\Support\Str::uuid()->toString(),
+                    'type' => 'App\Notifications\UserStatusChanged',
+                    'notifiable_type' => 'App\Models\User',
+                    'notifiable_id' => $candidate1->id,
+                    'data' => json_encode([
+                        'user_id' => $candidate1->id,
+                        'status' => 'active',
+                    ]),
+                    'read_at' => null,
+                    'created_at' => now()->subDays(1)->format('Y-m-d H:i:s'),
+                    'updated_at' => now()->subDays(1)->format('Y-m-d H:i:s'),
+                ]
+            ]);
+
+            // 7. Seed Saved Jobs for Candidate1
+            $savedJobIds = JobListing::approved()->take(3)->pluck('id');
+            foreach ($savedJobIds as $jobId) {
+                \App\Models\SavedJob::firstOrCreate([
+                    'user_id' => $candidate1->id,
+                    'job_listing_id' => $jobId,
+                ]);
+            }
+        }
+
+        if ($employerUser) {
+            \Illuminate\Support\Facades\DB::table('notifications')->insert([
+                [
+                    'id' => \Illuminate\Support\Str::uuid()->toString(),
+                    'type' => 'App\Notifications\JobStatusChanged',
+                    'notifiable_type' => 'App\Models\User',
+                    'notifiable_id' => $employerUser->id,
+                    'data' => json_encode([
+                        'job_id' => 2,
+                        'job_title' => 'Backend Developer',
+                        'status' => 'approved',
+                        'reason' => null,
+                    ]),
+                    'read_at' => null,
+                    'created_at' => now()->subHours(3)->format('Y-m-d H:i:s'),
+                    'updated_at' => now()->subHours(3)->format('Y-m-d H:i:s'),
+                ]
+            ]);
         }
     }
 }

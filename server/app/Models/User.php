@@ -97,6 +97,11 @@ class User extends Authenticatable
         return $this->hasMany(GalleryPhoto::class);
     }
 
+    public function savedJobs(): HasMany
+    {
+        return $this->hasMany(SavedJob::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

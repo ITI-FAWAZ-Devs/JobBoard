@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useQuery } from "@tanstack/vue-query";
-import { Plus, Eye, FileText, UserCheck, Search, Filter, MoreHorizontal, TrendingUp } from "lucide-vue-next";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { Plus, Eye, FileText, UserCheck, Search, Filter, Pencil, Trash2, TrendingUp } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import { RouterLink } from "vue-router";
+import { toast } from "vue-sonner";
 import { getEmployerAnalyticsApi, getEmployerJobsApi, type JobListing } from "@/api/employer";
+import api from "@/api/api";
 
 const page = ref(1);
 
@@ -57,6 +59,24 @@ function getStatusStyle(status: string) {
 function formatDate(dateStr?: string | null) {
   if (!dateStr) return "—";
   return new Date(dateStr).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+}
+
+const queryClient = useQueryClient();
+const deleteMutation = useMutation({
+  mutationFn: async (id: number) => {
+    await api.delete(`/employer/jobs/${id}`);
+  },
+  onSuccess: () => {
+    toast.success("Job deleted.");
+    queryClient.invalidateQueries({ queryKey: ["employer", "jobs"] });
+  },
+  onError: () => toast.error("Failed to delete job."),
+});
+
+function confirmDelete(job: JobListing) {
+  if (window.confirm(`Delete "${job.title}"? This cannot be undone.`)) {
+    deleteMutation.mutate(job.id);
+  }
 }
 </script>
 
@@ -152,9 +172,22 @@ function formatDate(dateStr?: string | null) {
                   <td class="p-md font-body-sm text-body-sm text-on-surface-variant">{{ formatDate(job.created_at) }}</td>
                   <td class="p-md text-right font-label-md text-label-md text-on-background">{{ job.applications_count ?? 0 }}</td>
                   <td class="p-md text-center">
-                    <Button variant="ghost" size="icon" class="cursor-pointer rounded-md text-on-surface-variant transition-colors hover:bg-surface-variant hover:text-primary">
-                      <MoreHorizontal class="h-5 w-5" aria-hidden="true" />
-                    </Button>
+                    <div class="flex items-center justify-center gap-1">
+                      <RouterLink
+                        :to="`/employer/jobs/${job.id}/edit`"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-md text-on-surface-variant transition-colors hover:bg-surface-variant hover:text-primary"
+                        title="Edit job"
+                      >
+                        <Pencil class="h-4 w-4" aria-hidden="true" />
+                      </RouterLink>
+                      <button
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-md text-on-surface-variant transition-colors hover:bg-error-container hover:text-error"
+                        title="Delete job"
+                        @click="confirmDelete(job)"
+                      >
+                        <Trash2 class="h-4 w-4" aria-hidden="true" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>

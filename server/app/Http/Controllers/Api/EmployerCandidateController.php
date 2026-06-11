@@ -124,6 +124,7 @@ class EmployerCandidateController extends Controller
                 'email' => $candidate->email,
                 'phone' => $profile?->phone,
                 'linkedin_url' => $profile?->linkedin_url,
+                'resume_url' => $profile?->resume_url,
             ],
         ]);
     }
