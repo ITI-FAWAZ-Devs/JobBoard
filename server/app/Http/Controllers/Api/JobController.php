@@ -6,9 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SearchJobRequest;
 use App\Http\Resources\JobListingResource;
 use App\Models\JobListing;
+use Illuminate\Support\Facades\Auth;
 
 class JobController extends Controller
 {
+    private function applyHasAppliedToQuery($query): void
+    {
+        $user = Auth::guard('sanctum')->user();
+        if ($user && $user->isCandidate() && $user->candidateProfile) {
+            $candidateProfileId = $user->candidateProfile->id;
+            $query->withExists(['applications as has_applied' => function ($q) use ($candidateProfileId) {
+                $q->where('candidate_profile_id', $candidateProfileId);
+            }]);
+        }
+    }
+
     public function index(SearchJobRequest $request)
     {
         $validated = $request->validated();
@@ -56,6 +68,8 @@ class JobController extends Controller
             $query->whereDate('created_at', '<=', $validated['date_to']);
         }
 
+        $this->applyHasAppliedToQuery($query);
+
         return JobListingResource::collection($query->latest()->paginate($perPage));
     }
 
@@ -68,6 +82,13 @@ class JobController extends Controller
         $jobListing->increment('views_count');
 
         $jobListing->load(['employerProfile', 'category']);
+
+        $user = Auth::guard('sanctum')->user();
+        if ($user && $user->isCandidate() && $user->candidateProfile) {
+            $jobListing->has_applied = $jobListing->applications()
+                ->where('candidate_profile_id', $user->candidateProfile->id)
+                ->exists();
+        }
 
         return new JobListingResource($jobListing);
     }

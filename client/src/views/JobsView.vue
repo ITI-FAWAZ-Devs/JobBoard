@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { RouterLink, useRouter } from "vue-router";
 import {
   Briefcase,
+  CheckCircle2,
   MapPin,
   Search,
   ChevronLeft,
@@ -332,14 +333,14 @@ watch([searchQuery, selectedCategory, selectedWorkType, selectedLocation, salary
 
         <!-- Error state -->
         <div v-else-if="isError" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center">
-          <p class="text-sm text-on-surface-variant">Failed to load jobs. Please try again.</p>
+          <p class="text-sm leading-relaxed text-on-surface-variant">Failed to load jobs. Please try again.</p>
         </div>
 
         <!-- Empty state -->
         <div v-else-if="!sortedJobs.length" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-12 text-center">
           <Briefcase class="mx-auto mb-3 h-12 w-12 text-on-surface-variant/40" />
           <h3 class="mb-1 text-lg font-semibold text-on-surface">No jobs found</h3>
-          <p class="text-sm text-on-surface-variant">
+          <p class="text-sm leading-relaxed text-on-surface-variant">
             Try adjusting your search or filters to find what you're looking for.
           </p>
           <Button variant="outline" class="mt-4" @click="clearFilters">Clear Filters</Button>
@@ -365,7 +366,7 @@ watch([searchQuery, selectedCategory, selectedWorkType, selectedLocation, salary
                   >
                     {{ job.title }}
                   </h3>
-                  <p class="font-body-sm text-body-sm text-on-surface-variant">
+                  <p class="font-body-sm text-body-sm leading-relaxed text-on-surface-variant">
                     {{ job.employer_profile?.company_name || "Company" }} • {{ job.location || "Remote" }}
                   </p>
                 </div>
@@ -403,12 +404,20 @@ watch([searchQuery, selectedCategory, selectedWorkType, selectedLocation, salary
                 {{ formatSalary(job.salary_min, job.salary_max) || "N/A" }}
                 <span v-if="job.salary_min || job.salary_max" class="font-body-sm text-body-sm text-on-surface-variant font-normal">/yr</span>
               </div>
-              <button 
+              <button
+                v-if="!job.has_applied"
                 @click="router.push(`/jobs/${job.id}`)"
                 class="bg-primary-container text-on-primary-container font-label-md text-label-md px-md py-xs rounded-lg hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
               >
                 Apply Now
               </button>
+              <span
+                v-else
+                class="inline-flex items-center gap-1 rounded-lg bg-secondary/10 px-md py-xs font-label-md text-label-md text-secondary"
+              >
+                <CheckCircle2 class="h-3.5 w-3.5" />
+                Applied
+              </span>
             </div>
           </div>
         </div>

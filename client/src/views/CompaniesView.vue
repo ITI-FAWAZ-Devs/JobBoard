@@ -169,7 +169,7 @@ function openWebsite(url?: string | null) {
       <!-- Page Header & Global Search -->
       <div class="mb-xl text-center max-w-2xl mx-auto">
         <h1 class="font-headline-xl text-headline-xl text-on-background mb-xs">Browse Companies</h1>
-        <p class="font-body-lg text-body-lg text-on-surface-variant mb-lg">
+        <p class="font-body-lg text-body-lg leading-relaxed text-on-surface-variant mb-lg">
           Discover top employers and find your future workplace. Explore company cultures, benefits, and open roles.
         </p>
         <div class="relative w-full max-w-xl mx-auto custom-shadow-soft rounded-full bg-surface-container-lowest flex items-center p-2 border border-outline-variant focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
@@ -390,14 +390,14 @@ function openWebsite(url?: string | null) {
 
           <!-- Error state -->
           <div v-else-if="isError" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center mb-xl">
-            <p class="text-sm text-on-surface-variant">Failed to load companies. Please try again.</p>
+            <p class="text-sm leading-relaxed text-on-surface-variant">Failed to load companies. Please try again.</p>
           </div>
 
           <!-- Empty state -->
           <div v-else-if="!companies.length" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-12 text-center mb-xl">
             <Building2 class="mx-auto mb-3 h-12 w-12 text-outline-variant" />
             <h3 class="mb-1 text-lg font-semibold text-on-surface">No companies found</h3>
-            <p class="text-sm text-on-surface-variant">Try adjusting your filters or search query.</p>
+            <p class="text-sm leading-relaxed text-on-surface-variant">Try adjusting your filters or search query.</p>
             <Button variant="outline" class="mt-4" @click="clearAllFilters">Clear Filters</Button>
           </div>
 

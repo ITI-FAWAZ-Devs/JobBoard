@@ -39,7 +39,7 @@ function continueToRegister() {
       <h1 class="mb-sm block font-headline-lg-mobile text-headline-lg-mobile text-on-background md:hidden">
         Join as a Candidate or Employer?
       </h1>
-      <p class="mx-auto font-body-md text-body-md text-on-surface-variant">
+      <p class="mx-auto font-body-md text-body-md leading-relaxed text-on-surface-variant">
         Select your primary purpose to help us customize your onboarding experience.
       </p>
     </section>
@@ -80,7 +80,7 @@ function continueToRegister() {
         </span>
 
         <h2 class="mb-xs font-headline-sm text-headline-sm text-on-surface">I'm a Candidate</h2>
-        <p class="font-body-sm text-body-sm text-on-surface-variant">
+        <p class="font-body-sm text-body-sm leading-relaxed text-on-surface-variant">
           I'm looking for the next great opportunity to advance my career, discover jobs, and connect with top companies.
         </p>
       </label>
@@ -115,7 +115,7 @@ function continueToRegister() {
         </span>
 
         <h2 class="mb-xs font-headline-sm text-headline-sm text-on-surface">I'm an Employer</h2>
-        <p class="font-body-sm text-body-sm text-on-surface-variant">
+        <p class="font-body-sm text-body-sm leading-relaxed text-on-surface-variant">
           I'm looking to hire top talent, post open roles, and manage candidates efficiently for my organization.
         </p>
       </label>
@@ -130,7 +130,7 @@ function continueToRegister() {
       >
         Create Account
       </Button>
-      <p class="font-body-sm text-body-sm text-on-surface-variant">
+      <p class="font-body-sm text-body-sm leading-relaxed text-on-surface-variant">
         Already have an account?
         <RouterLink class="cursor-pointer font-label-md text-label-md text-primary hover:underline" to="/sign-in">
           Sign In

@@ -4,6 +4,7 @@ import {
   ArrowRight,
   Bell,
   Bookmark,
+  CheckCircle2,
   ChevronRight,
   Eye,
   Lightbulb,
@@ -13,7 +14,7 @@ import {
   UserRound,
 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
 import { useProfile } from '@/Hooks/useProfile';
 import type { UserProfile } from '@/types/profile';
 import { useQuery } from '@tanstack/vue-query';
@@ -25,6 +26,8 @@ const user = computed<UserProfile>(() => (profile.value ?? {}) as UserProfile);
 const userName = computed(() => user.value.name?.trim() || 'Candidate');
 const avatarUrl = computed(() => user.value.avatar_url || '');
 const avatarInitial = computed(() => userName.value.charAt(0).toUpperCase());
+
+const router = useRouter();
 
 const { data: dashboardData, isPending } = useQuery({
   queryKey: ['candidate', 'dashboard'],
@@ -86,6 +89,7 @@ const recommendedJobs = computed(() => {
       tags,
       accent,
       cta: 'Apply Now',
+      has_applied: job.has_applied ?? false,
     };
   });
 });
@@ -183,7 +187,7 @@ const activity = computed(() => {
               <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h1 class="font-headline-lg text-headline-lg text-on-surface">Good morning, {{ userName }}!</h1>
-                  <p class="mt-1 font-body-md text-body-md text-on-surface-variant">
+                  <p class="mt-1 font-body-md text-body-md leading-relaxed text-on-surface-variant">
                     Here is what's happening with your job search today.
                   </p>
                 </div>
@@ -231,7 +235,7 @@ const activity = computed(() => {
                       </div>
                       <div>
                         <h3 class="font-headline-sm text-headline-sm text-on-surface">{{ job.title }}</h3>
-                        <p class="font-body-sm text-body-sm text-on-surface-variant">{{ job.company }} • {{ job.meta }}</p>
+                        <p class="font-body-sm text-body-sm leading-relaxed text-on-surface-variant">{{ job.company }} • {{ job.meta }}</p>
                       </div>
                     </div>
                     <Button variant="ghost" size="icon" class="cursor-pointer text-on-surface-variant hover:text-secondary">
@@ -249,9 +253,21 @@ const activity = computed(() => {
                     </span>
                   </div>
 
-                  <Button class="w-full rounded-lg bg-primary/10 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-primary hover:text-white">
-                    {{ job.cta }}
-                  </Button>
+                  <template v-if="!job.has_applied">
+                    <Button
+                      class="w-full rounded-lg bg-primary/10 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-primary hover:text-white"
+                      @click="router.push(`/jobs/${job.id}`)"
+                    >
+                      {{ job.cta }}
+                    </Button>
+                  </template>
+                  <div
+                    v-else
+                    class="flex w-full items-center justify-center gap-1.5 rounded-lg bg-secondary/10 py-2 font-label-md text-label-md text-secondary"
+                  >
+                    <CheckCircle2 class="h-4 w-4" />
+                    Applied
+                  </div>
                 </article>
               </div>
             </section>
@@ -302,7 +318,7 @@ const activity = computed(() => {
                     {{ job.badge }}
                   </div>
                   <p class="truncate font-headline-sm text-headline-sm text-on-surface">{{ job.title }}</p>
-                  <p class="font-body-xs text-body-xs text-on-surface-variant">{{ job.company }}</p>
+                  <p class="font-body-xs text-body-xs leading-relaxed text-on-surface-variant">{{ job.company }}</p>
                 </article>
 
                 <RouterLink
@@ -325,7 +341,7 @@ const activity = computed(() => {
                   <span v-else class="font-headline-md text-headline-md text-primary">{{ avatarInitial }}</span>
                 </div>
                 <h3 class="font-headline-md text-headline-md text-on-surface">{{ userName }}</h3>
-                <p class="mb-4 font-body-sm text-body-sm text-on-surface-variant">Open to opportunities</p>
+                <p class="mb-4 font-body-sm text-body-sm leading-relaxed text-on-surface-variant">Open to opportunities</p>
 
                 <div class="mb-4 flex flex-wrap justify-center gap-2">
                   <span class="rounded-md border border-outline-variant bg-surface px-2 py-1 font-label-sm text-label-sm text-on-surface-variant">
@@ -356,7 +372,7 @@ const activity = computed(() => {
                   </div>
                   <div>
                     <p class="font-body-sm text-body-sm text-on-surface">{{ item.title }}</p>
-                    <p class="mt-0.5 font-body-xs text-body-xs text-on-surface-variant">{{ item.meta }}</p>
+                    <p class="mt-0.5 font-body-xs text-body-xs leading-relaxed text-on-surface-variant">{{ item.meta }}</p>
                   </div>
                 </article>
               </div>

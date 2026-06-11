@@ -138,7 +138,7 @@ function formatSalary(min?: number | null, max?: number | null) {
       <!-- Header Section -->
       <div class="mb-8">
         <h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Saved Jobs</h2>
-        <p class="font-body-md text-body-md text-on-surface-variant mb-6">
+        <p class="font-body-md text-body-md leading-relaxed text-on-surface-variant mb-6">
           You have {{ meta?.total ?? 0 }} jobs saved. Keep track of opportunities you're interested in.
         </p>
 
@@ -164,7 +164,7 @@ function formatSalary(min?: number | null, max?: number | null) {
       </div>
 
       <div v-else-if="isError" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-12 text-center">
-        <p class="text-on-surface-variant">Failed to load saved jobs. Please try again.</p>
+        <p class="text-sm leading-relaxed text-on-surface-variant">Failed to load saved jobs. Please try again.</p>
         <Button class="mt-4" @click="queryClient.invalidateQueries({ queryKey: ['saved-jobs'] })">Retry</Button>
       </div>
 
@@ -172,7 +172,7 @@ function formatSalary(min?: number | null, max?: number | null) {
       <div v-else-if="!filteredJobs.length" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-12 text-center">
         <Bookmark class="mx-auto mb-3 h-12 w-12 text-outline-variant" />
         <h3 class="mb-1 text-lg font-semibold text-on-surface">No saved jobs found</h3>
-        <p class="text-sm text-on-surface-variant max-w-sm mx-auto">
+        <p class="text-sm leading-relaxed text-on-surface-variant max-w-sm mx-auto">
           {{ searchQuery || selectedFilter ? 'Try clearing your filters or search query.' : 'Bookmark jobs while searching, and they will show up here.' }}
         </p>
         <Button v-if="searchQuery || selectedFilter" variant="outline" class="mt-4" @click="searchQuery = ''; selectedFilter = null">

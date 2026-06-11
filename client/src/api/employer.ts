@@ -1,5 +1,10 @@
 import api from "./api";
 
+export type StripeSessionResponse = {
+  session_url: string;
+  session_id: string;
+};
+
 export type JobListing = {
   id: number;
   title: string;
@@ -68,34 +73,19 @@ export const getCandidatesApi = async (page = 1) => {
   return res.data as { status: string; data: { data: CandidateSummary[] } };
 };
 
-export const createStripeIntentApi = async (payload: { job_id: number; candidate_id: number }) => {
-  const res = await api.post("/employer/payments/stripe/intent", payload);
-  return res.data as { status: string; data: { client_secret: string } };
-};
-
-export const createPayPalOrderApiV1 = async (payload: { job_id: number; candidate_id: number }) => {
-  const res = await api.post("/employer/payments/paypal/order", payload);
-  return res.data as { status: string; data: { order_id: string; approval_url: string } };
-};
-
-export const getCandidateContactApiV1 = async (candidateId: number, jobId: number) => {
-  const res = await api.get(`/employer/candidates/${candidateId}/contact`, { params: { job_id: jobId } });
-  return res.data as { status: string; data: { email: string; phone?: string; linkedin_url?: string } };
-};
-
 export const getApplicationCheckoutApi = async (applicationId: number) => {
   const res = await api.get(`/applications/${applicationId}/checkout`);
   return res.data as { status: string; data: ApplicationSummary };
 };
 
-export const createStripePaymentIntentApi = async (applicationId: number) => {
-  const res = await api.post("/payments/stripe", { application_id: applicationId });
-  return res.data as { status: string; data: { client_secret: string } };
+export const createStripeCheckoutSessionApi = async (applicationId: number) => {
+  const res = await api.post("/payments/stripe/session", { application_id: applicationId });
+  return res.data as { status: string; data: StripeSessionResponse };
 };
 
-export const createPayPalOrderApi = async (applicationId: number) => {
-  const res = await api.post("/payments/paypal", { application_id: applicationId });
-  return res.data as { status: string; data: { approve_url: string } };
+export const verifyPaymentStatusApi = async (applicationId: number) => {
+  const res = await api.get(`/applications/${applicationId}/payment/status`);
+  return res.data as { status: string; data: { paid: boolean } };
 };
 
 export const getCandidateContactApi = async (applicationId: number) => {

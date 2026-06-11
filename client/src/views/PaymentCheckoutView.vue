@@ -1,24 +1,22 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { loadStripe, type Stripe, type StripeCardElement, type StripeElements } from "@stripe/stripe-js";
-import { ArrowLeft, CreditCard, ShieldCheck } from "lucide-vue-next";
+import { ArrowLeft, Lock, ShieldCheck } from "lucide-vue-next";
 import { Button } from "@/components/ui/button";
 import { toast } from "vue-sonner";
 import Navbar from "@/components/shared/Navbar.vue";
 import Footer from "@/components/shared/Footer.vue";
 import {
   getApplicationCheckoutApi,
-  createStripePaymentIntentApi,
-  createPayPalOrderApi,
+  createStripeCheckoutSessionApi,
 } from "@/api/employer";
 
 const route = useRoute();
 const router = useRouter();
 const applicationId = Number(route.params.applicationId);
 
-const activeTab = ref<"stripe" | "paypal">("stripe");
 const loading = ref(true);
+const processing = ref(false);
 const checkoutData = ref<{
   candidate_name: string;
   job_title: string;
@@ -26,17 +24,10 @@ const checkoutData = ref<{
   currency: string;
 } | null>(null);
 
-const stripeProcessing = ref(false);
-const stripeError = ref("");
-let stripeInstance: Stripe | null = null;
-let stripeElements: StripeElements | null = null;
-let stripeCardElement: StripeCardElement | null = null;
-
 onMounted(async () => {
   try {
     const res = await getApplicationCheckoutApi(applicationId);
     checkoutData.value = res.data;
-    await initStripeElements();
   } catch {
     toast.error("Failed to load checkout details");
   } finally {
@@ -44,77 +35,15 @@ onMounted(async () => {
   }
 });
 
-onBeforeUnmount(() => {
-  resetStripe();
-});
-
-function resetStripe() {
-  if (stripeCardElement) {
-    stripeCardElement.unmount();
-    stripeCardElement = null;
-  }
-  stripeElements = null;
-  stripeInstance = null;
-}
-
-async function initStripeElements() {
-  const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string;
-  if (!key) {
-    stripeError.value = "Stripe key not configured";
-    return;
-  }
-  stripeInstance = await loadStripe(key);
-  if (!stripeInstance) {
-    stripeError.value = "Failed to load Stripe";
-    return;
-  }
-  stripeElements = stripeInstance.elements();
-  stripeCardElement = stripeElements.create("card", {
-    style: {
-      base: {
-        color: "#0b1c30",
-        fontFamily: "Inter, system-ui, sans-serif",
-        fontSize: "14px",
-      },
-    },
-  });
-  await nextTick();
-  stripeCardElement.mount("#stripe-card-element");
-}
-
-async function handleStripePayment() {
-  if (!stripeInstance || !stripeCardElement) return;
-  stripeProcessing.value = true;
-  stripeError.value = "";
+async function handleStripeCheckout() {
+  processing.value = true;
   try {
-    const res = await createStripePaymentIntentApi(applicationId);
-    const clientSecret = res.data.client_secret;
-    const { error, paymentIntent } = await stripeInstance.confirmCardPayment(clientSecret, {
-      payment_method: { card: stripeCardElement },
-    });
-    if (error) {
-      stripeError.value = error.message || "Payment failed";
-      toast.error(stripeError.value);
-      return;
-    }
-    if (paymentIntent?.status === "succeeded") {
-      toast.success("Payment successful!");
-      router.push(`/payment/success/${applicationId}`);
-    }
+    const res = await createStripeCheckoutSessionApi(applicationId);
+    window.location.href = res.data.session_url;
   } catch (e: any) {
-    stripeError.value = e?.response?.data?.message || "Payment failed";
-    toast.error(stripeError.value);
+    toast.error(e?.response?.data?.message || "Failed to create checkout session");
   } finally {
-    stripeProcessing.value = false;
-  }
-}
-
-async function handlePayPalPayment() {
-  try {
-    const res = await createPayPalOrderApi(applicationId);
-    window.location.href = res.data.approve_url;
-  } catch {
-    toast.error("Failed to create PayPal order");
+    processing.value = false;
   }
 }
 </script>
@@ -162,62 +91,28 @@ async function handlePayPalPayment() {
           </div>
         </section>
 
-        <!-- Payment Method Tabs -->
-        <section class="rounded-2xl border border-outline-variant bg-card shadow-soft">
-          <div class="flex border-b border-outline-variant">
-            <button
-              class="flex-1 px-lg py-sm text-sm font-medium transition"
-              :class="activeTab === 'stripe'
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-on-surface-variant hover:text-on-surface'"
-              @click="activeTab = 'stripe'"
-            >
-              <CreditCard class="mr-xs inline h-4 w-4" />
-              Stripe
-            </button>
-            <button
-              class="flex-1 px-lg py-sm text-sm font-medium transition"
-              :class="activeTab === 'paypal'
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-on-surface-variant hover:text-on-surface'"
-              @click="activeTab = 'paypal'"
-            >
-              PayPal
-            </button>
+        <!-- Payment Section -->
+        <section class="rounded-2xl border border-outline-variant bg-card p-lg shadow-soft">
+          <div class="flex items-center gap-2 mb-4">
+            <Lock class="h-5 w-5 text-primary" />
+            <h2 class="text-lg font-semibold text-on-surface">Pay with Stripe</h2>
           </div>
+          <p class="text-sm leading-relaxed text-on-surface-variant mb-6">
+            You will be redirected to Stripe's secure checkout page to complete your payment.
+          </p>
 
-          <div class="p-lg">
-            <!-- Stripe -->
-            <div v-if="activeTab === 'stripe'" class="space-y-md">
-              <div
-                id="stripe-card-element"
-                class="rounded-lg border border-outline-variant bg-surface-container-lowest px-sm py-sm"
-              ></div>
-              <p v-if="stripeError" class="text-xs text-destructive">{{ stripeError }}</p>
-              <Button
-                class="w-full"
-                :disabled="stripeProcessing"
-                @click="handleStripePayment"
-              >
-                <ShieldCheck class="mr-xs h-4 w-4" />
-                {{ stripeProcessing ? 'Processing...' : `Pay ${checkoutData.currency} ${checkoutData.amount.toFixed(2)}` }}
-              </Button>
-            </div>
-
-            <!-- PayPal -->
-            <div v-if="activeTab === 'paypal'" class="space-y-md">
-              <p class="text-sm text-on-surface-variant">
-                You will be redirected to PayPal to complete the payment.
-              </p>
-              <Button class="w-full" @click="handlePayPalPayment">
-                Pay with PayPal
-              </Button>
-            </div>
-          </div>
+          <Button
+            class="w-full gap-2"
+            :disabled="processing"
+            @click="handleStripeCheckout"
+          >
+            <ShieldCheck class="h-4 w-4" />
+            {{ processing ? 'Redirecting to Stripe...' : `Pay ${checkoutData.currency} ${checkoutData.amount.toFixed(2)}` }}
+          </Button>
         </section>
       </template>
 
-      <div v-else class="rounded-2xl border border-outline-variant bg-card p-lg text-center text-sm text-on-surface-variant">
+      <div v-else class="rounded-2xl border border-outline-variant bg-card p-lg text-center text-sm leading-relaxed text-on-surface-variant">
         Could not load checkout details.
       </div>
     </main>

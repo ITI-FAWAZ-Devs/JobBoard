@@ -20,6 +20,7 @@ class Payment extends Model
         'currency',
         'status',
         'stripe_payment_intent_id',
+        'stripe_session_id',
         'paypal_order_id',
         'paid_at',
     ];

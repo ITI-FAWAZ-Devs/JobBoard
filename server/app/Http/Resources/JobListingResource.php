@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 
 class JobListingResource extends JsonResource
 {
@@ -29,6 +30,12 @@ class JobListingResource extends JsonResource
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
             'employer_profile' => new EmployerProfileResource($this->whenLoaded('employerProfile')),
             'category' => new CategoryResource($this->whenLoaded('category')),
+            'has_applied' => $this->when(
+                Auth::guard('sanctum')->user()?->isCandidate(),
+                fn () => $this->has_applied ?? $this->applications()
+                    ->where('candidate_profile_id', Auth::guard('sanctum')->user()->candidateProfile?->id)
+                    ->exists()
+            ),
         ];
     }
 }

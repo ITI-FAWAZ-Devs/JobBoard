@@ -119,7 +119,7 @@ function handleSubmit() {
         <h1 class="font-headline-lg text-headline-lg text-on-background">
           {{ isEdit ? "Edit Job Listing" : "Post a New Job" }}
         </h1>
-        <p class="mt-1 font-body-md text-body-md text-on-surface-variant">
+        <p class="mt-1 font-body-md text-body-md leading-relaxed text-on-surface-variant">
           {{ isEdit ? "Update your job listing details." : "Fill in the details to create a new job posting." }}
         </p>
       </div>

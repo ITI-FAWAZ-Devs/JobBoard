@@ -77,7 +77,7 @@ const joinedDate = computed(() => {
     <main class="mx-auto w-full max-w-container-max flex-1 p-md md:p-lg">
       <div class="mb-xl">
         <h1 class="font-headline-lg text-headline-lg text-on-background">My Profile</h1>
-        <p class="mt-1 font-body-md text-body-md text-on-surface-variant">Manage your administrator account.</p>
+        <p class="mt-1 font-body-md text-body-md leading-relaxed text-on-surface-variant">Manage your administrator account.</p>
       </div>
 
       <div class="grid gap-lg lg:grid-cols-[320px_1fr]">

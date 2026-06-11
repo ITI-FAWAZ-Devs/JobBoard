@@ -49,7 +49,7 @@ async function handleApprove(jobId: number) {
       <div class="mb-xl flex flex-col justify-between gap-sm md:flex-row md:items-center">
         <div>
           <h1 class="font-headline-lg text-headline-lg text-on-background">Pending Job Approvals</h1>
-          <p class="mt-1 font-body-md text-body-md text-on-surface-variant">
+          <p class="mt-1 font-body-md text-body-md leading-relaxed text-on-surface-variant">
             Review and moderate new job listings.
           </p>
         </div>
@@ -98,7 +98,7 @@ async function handleApprove(jobId: number) {
         <div v-else-if="!jobs.length" class="flex flex-col items-center justify-center p-xl text-center">
           <CheckCircle2 class="mb-sm h-12 w-12 text-secondary" />
           <p class="font-label-md text-label-md text-on-background">All caught up!</p>
-          <p class="font-body-sm text-body-sm text-on-surface-variant">No pending jobs require moderation.</p>
+          <p class="font-body-sm text-body-sm leading-relaxed text-on-surface-variant">No pending jobs require moderation.</p>
         </div>
 
         <div v-else class="overflow-x-auto">

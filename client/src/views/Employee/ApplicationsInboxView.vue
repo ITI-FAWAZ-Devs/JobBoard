@@ -99,7 +99,7 @@ function formatDate(dateStr: string) {
       <div class="mb-xl flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 class="font-headline-lg text-headline-lg text-on-background">Applications Inbox</h1>
-          <p class="mt-1 font-body-md text-body-md text-on-surface-variant">
+          <p class="mt-1 font-body-md text-body-md leading-relaxed text-on-surface-variant">
             Review and manage applications to your job postings.
           </p>
         </div>
@@ -125,14 +125,14 @@ function formatDate(dateStr: string) {
 
       <!-- Error -->
       <div v-else-if="isError" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center">
-        <p class="text-sm text-on-surface-variant">Failed to load applications. Please try again.</p>
+        <p class="text-sm leading-relaxed text-on-surface-variant">Failed to load applications. Please try again.</p>
       </div>
 
       <!-- Empty -->
       <div v-else-if="!applications.length" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-12 text-center">
         <Inbox class="mx-auto mb-3 h-12 w-12 text-on-surface-variant/40" />
         <h3 class="mb-1 text-lg font-semibold text-on-surface">No applications yet</h3>
-        <p class="text-sm text-on-surface-variant">Applications from candidates will appear here.</p>
+        <p class="text-sm leading-relaxed text-on-surface-variant">Applications from candidates will appear here.</p>
       </div>
 
       <!-- Applications list -->
@@ -261,7 +261,7 @@ function formatDate(dateStr: string) {
                 </div>
                 <div v-if="app.cover_letter">
                   <h4 class="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Cover Letter</h4>
-                  <p class="whitespace-pre-line text-sm text-on-surface-variant">{{ app.cover_letter }}</p>
+                  <p class="whitespace-pre-line text-sm leading-relaxed text-on-surface-variant">{{ app.cover_letter }}</p>
                 </div>
               </div>
             </div>

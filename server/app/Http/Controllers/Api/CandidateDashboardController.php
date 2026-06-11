@@ -91,8 +91,14 @@ class CandidateDashboardController extends Controller
             ])->filter(fn ($item) => $item['job'] !== null)->values();
 
         // Recommended Jobs (latest 4 active jobs)
+        $candidateProfileId = $candidateProfile?->id;
         $recommendedJobs = JobListing::approved()
             ->with(['employerProfile', 'category'])
+            ->when($candidateProfileId, function ($q) use ($candidateProfileId) {
+                $q->withExists(['applications as has_applied' => function ($sq) use ($candidateProfileId) {
+                    $sq->where('candidate_profile_id', $candidateProfileId);
+                }]);
+            })
             ->latest()
             ->take(4)
             ->get()
@@ -105,6 +111,7 @@ class CandidateDashboardController extends Controller
                 'salary_min' => $job->salary_min,
                 'salary_max' => $job->salary_max,
                 'category' => $job->category?->name,
+                'has_applied' => (bool) ($job->has_applied ?? false),
             ]);
 
         // Recent Activity (latest 5 notifications)

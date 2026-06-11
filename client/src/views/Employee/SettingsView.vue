@@ -79,7 +79,7 @@ async function handleSave() {
     <div class="mx-auto max-w-5xl space-y-6">
       <section class="rounded-2xl border border-outline-variant/50 bg-surface-container p-6 shadow-sm">
         <h1 class="font-headline-lg text-headline-lg">Employer Settings</h1>
-        <p class="mt-1 font-body-md text-body-md text-on-surface-variant">
+        <p class="mt-1 font-body-md text-body-md leading-relaxed text-on-surface-variant">
           Update your name, email, and password.
         </p>
       </section>

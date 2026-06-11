@@ -103,6 +103,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresRole: "employer" },
     },
     {
+      path: "/payment/fail/:applicationId",
+      name: "PaymentFail",
+      component: () => import("@/views/PaymentFailView.vue"),
+      meta: { requiresAuth: true, requiresRole: "employer" },
+    },
+    {
       path: "/employer",
       component: () => import("@/layouts/RoleSidebarLayout.vue"),
       meta: { requiresAuth: true, requiresRole: "employer" },

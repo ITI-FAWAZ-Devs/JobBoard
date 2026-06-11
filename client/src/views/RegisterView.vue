@@ -116,7 +116,7 @@ function handleRegister() {
           WorkHive
         </RouterLink>
         <h1 class="mb-base font-headline-sm text-headline-sm text-on-surface">Create an Account</h1>
-        <p class="font-body-sm text-body-sm text-on-surface-variant">Join the modern job marketplace.</p>
+        <p class="font-body-sm text-body-sm leading-relaxed text-on-surface-variant">Join the modern job marketplace.</p>
       </div>
 
       <div v-if="activeRole === 'candidate'" id="panel-candidate" aria-labelledby="tab-candidate" role="tabpanel">
@@ -298,7 +298,7 @@ function handleRegister() {
       </div>
 
       <div class="mt-lg text-center">
-        <p class="font-body-sm text-body-sm text-on-surface-variant">
+        <p class="font-body-sm text-body-sm leading-relaxed text-on-surface-variant">
           Already have an account?
           <RouterLink class="cursor-pointer font-medium text-primary hover:underline" to="/sign-in">Log in</RouterLink>
         </p>

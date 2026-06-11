@@ -385,7 +385,7 @@ const profileCompleteness = computed(() => {
                 </div>
                 <div class="flex-1">
                   <p class="font-label-sm text-label-sm text-on-surface-variant">Email</p>
-                  <p class="font-body-sm text-body-sm text-on-surface">{{ email }}</p>
+                  <p class="font-body-sm text-body-sm leading-relaxed text-on-surface">{{ email }}</p>
                 </div>
               </div>
 
@@ -528,7 +528,7 @@ const profileCompleteness = computed(() => {
                     <div class="flex items-start justify-between gap-4">
                       <div>
                         <h3 class="font-label-md text-label-md text-on-surface">{{ item.title }}</h3>
-                        <p class="font-body-sm text-body-sm text-on-surface-variant">{{ item.company }}{{ item.location ? ' • ' + item.location : '' }}</p>
+                        <p class="font-body-sm text-body-sm leading-relaxed text-on-surface-variant">{{ item.company }}{{ item.location ? ' • ' + item.location : '' }}</p>
                         <p class="font-label-sm text-label-sm text-outline">{{ item.period || '' }}</p>
                       </div>
                     </div>
@@ -607,7 +607,7 @@ const profileCompleteness = computed(() => {
                       <div class="flex items-start justify-between gap-4">
                         <div>
                           <h3 class="font-label-md text-label-md text-on-surface">{{ item.title }}</h3>
-                          <p class="font-body-sm text-body-sm text-on-surface-variant">{{ item.school }}</p>
+                          <p class="font-body-sm text-body-sm leading-relaxed text-on-surface-variant">{{ item.school }}</p>
                           <p class="font-label-sm text-label-sm text-outline">{{ item.period || '' }}</p>
                         </div>
                       </div>
@@ -691,7 +691,7 @@ const profileCompleteness = computed(() => {
                 <Upload class="h-5 w-5" aria-hidden="true" />
               </div>
               <p class="font-label-md text-label-md text-on-surface">{{ resumeUrl || resumeFile ? (resumeFile ? resumeFile.name : 'Resume uploaded') : 'Click to upload or drag and drop' }}</p>
-              <p class="font-body-sm text-body-sm text-on-surface-variant">PDF, DOCX up to 5MB</p>
+              <p class="font-body-sm text-body-sm leading-relaxed text-on-surface-variant">PDF, DOCX up to 5MB</p>
               <input accept=".pdf,.docx,.doc" type="file" class="hidden" ref="resumeInputRef" @change="handleResumeChange" />
               <Button variant="outline" class="mt-2 rounded-lg border-outline-variant px-4 py-2 font-label-sm text-label-sm text-on-surface" @click="($refs.resumeInputRef as any)?.click()">
                 {{ resumeFile ? 'Change File' : 'Browse File' }}

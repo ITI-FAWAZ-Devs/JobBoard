@@ -64,7 +64,7 @@ const confirmDelete = (comment: Comment) => {
       <div class="mb-xl flex flex-col justify-between gap-sm md:flex-row md:items-center">
         <div>
           <h1 class="font-headline-lg text-headline-lg text-on-background">Comment Moderation</h1>
-          <p class="mt-1 font-body-md text-body-md text-on-surface-variant">
+          <p class="mt-1 font-body-md text-body-md leading-relaxed text-on-surface-variant">
             Review and moderate flagged comments.
           </p>
         </div>
@@ -98,7 +98,7 @@ const confirmDelete = (comment: Comment) => {
         <div v-else-if="!filteredComments.length" class="flex flex-col items-center justify-center p-xl text-center">
           <Flag class="mb-sm h-10 w-10 text-secondary" />
           <p class="font-label-md text-label-md text-on-background">No flagged comments</p>
-          <p class="font-body-sm text-body-sm text-on-surface-variant">{{ search ? 'No results match your search.' : 'No comments have been flagged for review.' }}</p>
+          <p class="font-body-sm text-body-sm leading-relaxed text-on-surface-variant">{{ search ? 'No results match your search.' : 'No comments have been flagged for review.' }}</p>
         </div>
         <div v-else class="overflow-x-auto">
           <table class="w-full border-collapse text-left">
