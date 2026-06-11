@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Application;
 use App\Models\JobListing;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Stripe\StripeClient;
 
@@ -85,31 +87,35 @@ class EmployerPaymentController extends Controller
             ], 500);
         }
 
-        $payment = Payment::create([
-            'employer_id' => $user->id,
-            'candidate_id' => $candidate->id,
-            'job_id' => $job->id,
-            'provider' => 'stripe',
-            'amount' => $amount,
-            'currency' => $currency,
-            'status' => 'pending',
-        ]);
-
-        $stripe = new StripeClient($stripeSecret);
-        $intent = $stripe->paymentIntents->create([
-            'amount' => (int) round($amount * 100),
-            'currency' => $currency,
-            'metadata' => [
-                'payment_id' => $payment->id,
-                'job_id' => $job->id,
-                'candidate_id' => $candidate->id,
+        $payment = DB::transaction(function () use ($user, $candidate, $job, $amount, $currency, $stripeSecret) {
+            $payment = Payment::create([
                 'employer_id' => $user->id,
-            ],
-        ]);
+                'candidate_id' => $candidate->id,
+                'job_id' => $job->id,
+                'provider' => 'stripe',
+                'amount' => $amount,
+                'currency' => $currency,
+                'status' => 'pending',
+            ]);
 
-        $payment->update([
-            'stripe_payment_intent_id' => $intent->id,
-        ]);
+            $stripe = new StripeClient($stripeSecret);
+            $intent = $stripe->paymentIntents->create([
+                'amount' => (int) round($amount * 100),
+                'currency' => $currency,
+                'metadata' => [
+                    'payment_id' => $payment->id,
+                    'job_id' => $job->id,
+                    'candidate_id' => $candidate->id,
+                    'employer_id' => $user->id,
+                ],
+            ]);
+
+            $payment->update([
+                'stripe_payment_intent_id' => $intent->id,
+            ]);
+
+            return $payment->fresh();
+        });
 
         return response()->json([
             'status' => 'success',
@@ -195,49 +201,57 @@ class EmployerPaymentController extends Controller
             ], 500);
         }
 
-        $payment = Payment::create([
-            'employer_id' => $user->id,
-            'candidate_id' => $candidate->id,
-            'job_id' => $job->id,
-            'provider' => 'paypal',
-            'amount' => $amount,
-            'currency' => strtolower($currency),
-            'status' => 'pending',
-        ]);
-
-        $response = Http::withToken($accessToken)
-            ->post($baseUrl.'/v2/checkout/orders', [
-                'intent' => 'CAPTURE',
-                'purchase_units' => [
-                    [
-                        'reference_id' => (string) $payment->id,
-                        'amount' => [
-                            'currency_code' => $currency,
-                            'value' => number_format($amount, 2, '.', ''),
-                        ],
-                    ],
-                ],
-                'application_context' => [
-                    'return_url' => rtrim((string) config('app.frontend_url'), '/').'/employer/checkout?status=success',
-                    'cancel_url' => rtrim((string) config('app.frontend_url'), '/').'/employer/checkout?status=cancel',
-                ],
+        $result = DB::transaction(function () use ($user, $candidate, $job, $amount, $currency, $baseUrl, $accessToken) {
+            $payment = Payment::create([
+                'employer_id' => $user->id,
+                'candidate_id' => $candidate->id,
+                'job_id' => $job->id,
+                'provider' => 'paypal',
+                'amount' => $amount,
+                'currency' => strtolower($currency),
+                'status' => 'pending',
             ]);
 
-        if (! $response->successful()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to create PayPal order.',
-                'data' => $response->json(),
-            ], 422);
-        }
+            $response = Http::withToken($accessToken)
+                ->post($baseUrl.'/v2/checkout/orders', [
+                    'intent' => 'CAPTURE',
+                    'purchase_units' => [
+                        [
+                            'reference_id' => (string) $payment->id,
+                            'amount' => [
+                                'currency_code' => $currency,
+                                'value' => number_format($amount, 2, '.', ''),
+                            ],
+                        ],
+                    ],
+                    'application_context' => [
+                    'return_url' => rtrim((string) config('app.frontend_url'), '/').'/payment/success/'.$payment->application_id,
+                    'cancel_url' => rtrim((string) config('app.frontend_url'), '/').'/payment/checkout/'.$payment->application_id,
+                    ],
+                ]);
 
-        $orderId = $response->json('id');
-        $approvalUrl = collect($response->json('links', []))
-            ->firstWhere('rel', 'approve')['href'] ?? null;
+            if (! $response->successful()) {
+                throw new \RuntimeException('PayPal order creation failed: '.$response->body());
+            }
 
-        $payment->update([
-            'paypal_order_id' => $orderId,
-        ]);
+            $orderId = $response->json('id');
+            $approvalUrl = collect($response->json('links', []))
+                ->firstWhere('rel', 'approve')['href'] ?? null;
+
+            $payment->update([
+                'paypal_order_id' => $orderId,
+            ]);
+
+            return [
+                'payment' => $payment->fresh(),
+                'order_id' => $orderId,
+                'approval_url' => $approvalUrl,
+            ];
+        });
+
+        $payment = $result['payment'];
+        $orderId = $result['order_id'];
+        $approvalUrl = $result['approval_url'];
 
         return response()->json([
             'status' => 'success',

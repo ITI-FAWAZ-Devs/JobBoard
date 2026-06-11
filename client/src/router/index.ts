@@ -30,7 +30,7 @@ const router = createRouter({
     },
     {
       path: "/admin",
-      component: () => import("@/components/admin/AdminLayout.vue"),
+      component: () => import("@/layouts/RoleSidebarLayout.vue"),
       meta: { requiresAuth: true, requiresRole: "admin" },
       redirect: "/admin/dashboard",
       children: [
@@ -38,66 +38,54 @@ const router = createRouter({
           path: "dashboard",
           name: "AdminDashboard",
           component: () => import("@/views/Admin/DashboardView.vue"),
-          meta: {
-            pageTitle: "Platform Overview",
-            pageSubtitle: "Monitor activity and manage content across WorkHive.",
-          },
+        },
+        {
+          path: "jobs",
+          name: "AdminPendingJobs",
+          component: () => import("@/views/Admin/PendingJobsView.vue"),
         },
         {
           path: "pending-jobs",
-          name: "AdminPendingJobs",
-          component: () => import("@/views/Admin/PendingJobsView.vue"),
-          meta: {
-            pageTitle: "Pending Job Approvals",
-            pageSubtitle: "Review job listings awaiting admin approval.",
-          },
+          redirect: { name: "AdminPendingJobs" },
         },
         {
           path: "users",
           name: "AdminUsers",
           component: () => import("@/views/Admin/UserManagementView.vue"),
-          meta: {
-            pageTitle: "User Management",
-            pageSubtitle: "Review accounts, enforce policy, and keep the platform safe.",
-          },
         },
         {
           path: "comments",
           name: "AdminComments",
           component: () => import("@/views/Admin/CommentModerationView.vue"),
-          meta: {
-            pageTitle: "Comment Moderation",
-            pageSubtitle: "Review user comments, hide inappropriate content, or delete spam.",
-          },
         },
         {
           path: "profile",
           name: "AdminProfile",
           component: () => import("@/views/Admin/ProfileView.vue"),
-          meta: {
-            pageTitle: "Admin Profile",
-            pageSubtitle: "Manage your administrator account.",
-          },
         },
         {
           path: "notifications",
           name: "AdminNotifications",
           component: () => import("@/views/Admin/NotificationsView.vue"),
-          meta: {
-            pageTitle: "Admin Notifications",
-            pageSubtitle: "Review platform alerts and activity updates.",
-          },
         },
         {
           path: "settings",
           name: "AdminSettings",
           component: () => import("@/views/Admin/SettingsView.vue"),
-          meta: {
-            pageTitle: "Admin Settings",
-            pageSubtitle: "Configure platform administration preferences.",
-          },
         },
       ],
+    },
+    {
+      path: "/payment/checkout/:applicationId",
+      name: "PaymentCheckout",
+      component: () => import("@/views/PaymentCheckoutView.vue"),
+      meta: { requiresAuth: true, requiresRole: "employer" },
+    },
+    {
+      path: "/payment/success/:applicationId",
+      name: "PaymentSuccess",
+      component: () => import("@/views/PaymentSuccessView.vue"),
+      meta: { requiresAuth: true, requiresRole: "employer" },
     },
     {
       path: "/employer",
@@ -113,7 +101,7 @@ const router = createRouter({
         {
           path: "analytics",
           name: "EmployerAnalytics",
-          component: () => import("@/views/employer/AnalyticsView.vue"),
+          component: () => import("@/views/Employee/AnalyticsView.vue"),
         },
         {
           path: "checkout",
@@ -164,6 +152,12 @@ const router = createRouter({
           component: () => import("@/views/Candidate/SettingsView.vue"),
         },
       ],
+    },
+    {
+      path: "/help",
+      name: "HelpCenter",
+      component: () => import("@/views/HelpCenterView.vue"),
+      meta: { requiresAuth: true },
     },
     {
       path: "/:pathMatch(.*)*",

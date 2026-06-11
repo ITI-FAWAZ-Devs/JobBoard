@@ -3,15 +3,19 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Comment;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AdminCommentController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $query = \App\Models\Comment::with(['user', 'jobListing']);
-        
-        if ($request->has('reported') && $request->reported == 'true') {
+        $query = Comment::with(['user', 'jobListing']);
+
+        $flagged = $request->boolean('flagged', false) || $request->boolean('reported', false);
+
+        if ($flagged) {
             $query->where('is_reported', true);
         }
 
@@ -19,31 +23,43 @@ class AdminCommentController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Comments retrieved successfully',
-            'data' => $comments
+            'message' => 'Comments retrieved successfully.',
+            'data' => $comments,
         ]);
     }
 
-    public function hide(\App\Models\Comment $comment)
+    public function hide(Comment $comment): JsonResponse
     {
-        $comment->is_hidden = !$comment->is_hidden;
+        $comment->is_hidden = ! $comment->is_hidden;
         $comment->save();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Comment visibility toggled successfully',
-            'data' => $comment
+            'message' => 'Comment visibility toggled.',
+            'data' => $comment->fresh()->load(['user', 'jobListing']),
         ]);
     }
 
-    public function destroy(\App\Models\Comment $comment)
+    public function unflag(Comment $comment): JsonResponse
+    {
+        $comment->is_reported = false;
+        $comment->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Flag dismissed.',
+            'data' => $comment->fresh()->load(['user', 'jobListing']),
+        ]);
+    }
+
+    public function destroy(Comment $comment): JsonResponse
     {
         $comment->delete();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Comment deleted successfully',
-            'data' => null
+            'message' => 'Comment deleted.',
+            'data' => null,
         ]);
     }
 }

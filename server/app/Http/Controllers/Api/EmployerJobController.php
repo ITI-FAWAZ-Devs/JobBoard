@@ -20,6 +20,7 @@ class EmployerJobController extends Controller
 
         $jobs = JobListing::forEmployer($employerProfile->id)
             ->with(['category'])
+            ->withCount(['applications'])
             ->latest()
             ->paginate(15);
 

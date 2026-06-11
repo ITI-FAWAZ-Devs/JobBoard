@@ -1,19 +1,20 @@
 <?php
 
+use App\Http\Controllers\Api\AdminCommentController;
+use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Api\AdminJobController;
 use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\EducationController;
+use App\Http\Controllers\Api\EmployerAnalyticsController;
 use App\Http\Controllers\Api\EmployerCandidateController;
 use App\Http\Controllers\Api\EmployerJobController;
 use App\Http\Controllers\Api\EmployerPaymentController;
-use App\Http\Controllers\Api\AdminCommentController;
-use App\Http\Controllers\Api\EmployerAnalyticsController;
-use App\Http\Controllers\Api\JobController;
-use App\Http\Controllers\Api\PaymentWebhookController;
-use App\Http\Controllers\Api\EducationController;
 use App\Http\Controllers\Api\ExperienceController;
 use App\Http\Controllers\Api\GalleryPhotoController;
+use App\Http\Controllers\Api\JobController;
 use App\Http\Controllers\Api\OfficeController;
+use App\Http\Controllers\Api\PaymentWebhookController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,31 +29,21 @@ Route::prefix('v1')->group(function (): void {
 
     Route::post('/payments/stripe/webhook', [PaymentWebhookController::class, 'stripe']);
     Route::post('/payments/paypal/webhook', [PaymentWebhookController::class, 'paypal']);
-Route::middleware('auth:sanctum')->group(function (): void {
-    Route::post('/auth/logout', [AuthController::class, 'logout']);
-    Route::get('/auth/me', [AuthController::class, 'me']);
-    Route::match(['post', 'patch'], '/auth/me', [UserController::class, 'updateSelf']);
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::match(['post', 'patch'], '/auth/me', [UserController::class, 'updateSelf']);
 
         Route::get('/users', [UserController::class, 'index']);
         Route::get('/users/{user}', [UserController::class, 'show']);
         Route::post('/users/{user}', [UserController::class, 'update']);
         Route::delete('/users/{user}', [UserController::class, 'destroy']);
-    Route::apiResource('experiences', ExperienceController::class)->except(['show']);
-    Route::apiResource('education', EducationController::class)->except(['show']);
-    Route::apiResource('offices', OfficeController::class)->except(['show', 'edit', 'create']);
-    Route::apiResource('gallery-photos', GalleryPhotoController::class)->except(['show', 'edit', 'create', 'update']);
 
-    Route::middleware('role:employer')->prefix('employer')->group(function (): void {
-        Route::get('/jobs', [EmployerJobController::class, 'index']);
-        Route::post('/jobs', [EmployerJobController::class, 'store']);
-        Route::get('/jobs/{jobListing}', [EmployerJobController::class, 'show']);
-        Route::put('/jobs/{jobListing}', [EmployerJobController::class, 'update']);
-        Route::delete('/jobs/{jobListing}', [EmployerJobController::class, 'destroy']);
-    });
+        Route::apiResource('experiences', ExperienceController::class)->except(['show']);
+        Route::apiResource('education', EducationController::class)->except(['show']);
+        Route::apiResource('offices', OfficeController::class)->except(['show', 'edit', 'create']);
+        Route::apiResource('gallery-photos', GalleryPhotoController::class)->except(['show', 'edit', 'create', 'update']);
 
         Route::middleware('role:employer')->prefix('employer')->group(function (): void {
             Route::get('/analytics', [EmployerAnalyticsController::class, 'index']);
@@ -70,6 +61,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
         });
 
         Route::middleware('role:admin')->prefix('admin')->group(function (): void {
+            Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+            Route::get('/jobs', [AdminJobController::class, 'index']);
             Route::get('/jobs/pending', [AdminJobController::class, 'pending']);
             Route::patch('/jobs/{jobListing}/approve', [AdminJobController::class, 'approve']);
             Route::patch('/jobs/{jobListing}/reject', [AdminJobController::class, 'reject']);
@@ -78,11 +71,12 @@ Route::middleware('auth:sanctum')->group(function (): void {
             Route::patch('/users/{user}/suspend', [AdminUserController::class, 'suspend']);
             Route::patch('/users/{user}/ban', [AdminUserController::class, 'ban']);
             Route::patch('/users/{user}/activate', [AdminUserController::class, 'activate']);
+            Route::patch('/users/{user}/restore', [AdminUserController::class, 'restore']);
 
             Route::get('/comments', [AdminCommentController::class, 'index']);
             Route::patch('/comments/{comment}/hide', [AdminCommentController::class, 'hide']);
+            Route::patch('/comments/{comment}/unflag', [AdminCommentController::class, 'unflag']);
             Route::delete('/comments/{comment}', [AdminCommentController::class, 'destroy']);
         });
     });
-});
 });

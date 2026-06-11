@@ -90,6 +90,11 @@ export const activateUserApi = async (userId: number) => {
   return res.data as ApiResponse<UserSummary>;
 };
 
+export const restoreUserApi = async (userId: number) => {
+  const res = await api.patch(`/admin/users/${userId}/restore`);
+  return res.data as ApiResponse<UserSummary>;
+};
+
 export type Comment = {
   id: number;
   user_id: number;
@@ -115,4 +120,48 @@ export const hideCommentApi = async (commentId: number) => {
 export const deleteCommentApi = async (commentId: number) => {
   const res = await api.delete(`/admin/comments/${commentId}`);
   return res.data as ApiResponse<null>;
+};
+
+export const unflagCommentApi = async (commentId: number) => {
+  const res = await api.patch(`/admin/comments/${commentId}/unflag`);
+  return res.data as ApiResponse<Comment>;
+};
+
+export const getPendingJobsApiV2 = async (page = 1) => {
+  const res = await api.get("/admin/jobs", { params: { status: "pending", page } });
+  return res.data as ApiResponse<Paginated<JobListing>>;
+};
+
+export type AdminDashboard = {
+  users: {
+    total: number;
+    employers: number;
+    candidates: number;
+  };
+  jobs: {
+    total: number;
+    pending: number;
+    approved: number;
+    rejected: number;
+  };
+  flagged_comments_count: number;
+  recent_pending_jobs: {
+    id: number;
+    title: string;
+    company_name: string;
+    location: string;
+    created_at: string;
+  }[];
+  recent_flagged_comments: {
+    id: number;
+    user_name: string;
+    job_title: string;
+    content: string;
+    created_at: string;
+  }[];
+};
+
+export const getAdminDashboardApi = async () => {
+  const res = await api.get("/admin/dashboard");
+  return res.data as ApiResponse<AdminDashboard>;
 };

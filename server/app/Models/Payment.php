@@ -11,6 +11,7 @@ class Payment extends Model
     use HasFactory;
 
     protected $fillable = [
+        'application_id',
         'employer_id',
         'candidate_id',
         'job_id',
@@ -20,13 +21,20 @@ class Payment extends Model
         'status',
         'stripe_payment_intent_id',
         'paypal_order_id',
+        'paid_at',
     ];
 
     protected function casts(): array
     {
         return [
             'amount' => 'decimal:2',
+            'paid_at' => 'datetime',
         ];
+    }
+
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(Application::class);
     }
 
     public function employer(): BelongsTo

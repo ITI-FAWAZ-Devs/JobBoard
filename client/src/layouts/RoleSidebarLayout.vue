@@ -4,12 +4,16 @@ import { useRoute } from 'vue-router';
 import {
   BarChart3,
   BriefcaseBusiness,
+  ClipboardCheck,
   CreditCard,
   FileText,
+  Flag,
   Heart,
+  LayoutDashboard,
   Mail,
   Settings,
   User,
+  Users,
 } from 'lucide-vue-next';
 import Sidebar from '@/components/shared/Sidebar.vue';
 import { useAuth } from '@/composables/useAuth';
@@ -18,6 +22,14 @@ const route = useRoute();
 const { user } = useAuth();
 
 const navItemsBySection = {
+  admin: [
+    { label: 'Dashboard', icon: LayoutDashboard, to: '/admin/dashboard' },
+    { label: 'Pending Jobs', icon: ClipboardCheck, to: '/admin/jobs' },
+    { label: 'User Management', icon: Users, to: '/admin/users' },
+    { label: 'Comments', icon: Flag, to: '/admin/comments' },
+    { label: 'Profile', icon: User, to: '/admin/profile' },
+    { label: 'Settings', icon: Settings, to: '/admin/settings' },
+  ],
   candidate: [
     { label: 'Dashboard', icon: BarChart3, to: '/candidate/dashboard' },
     { label: 'Browse Jobs', icon: BriefcaseBusiness, to: '/candidate/jobs' },
@@ -37,8 +49,8 @@ const navItemsBySection = {
 } as const;
 
 const section = computed<keyof typeof navItemsBySection>(() => {
+  if (route.path.startsWith('/admin')) return 'admin';
   if (route.path.startsWith('/employer')) return 'employer';
-
   return 'candidate';
 });
 

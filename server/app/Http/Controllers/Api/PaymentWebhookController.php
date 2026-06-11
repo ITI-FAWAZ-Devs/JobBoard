@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Application;
 use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -47,7 +48,16 @@ class PaymentWebhookController extends Controller
 
             if ($payment) {
                 if ($type === 'payment_intent.succeeded') {
-                    $payment->update(['status' => 'paid']);
+                    $payment->update([
+                        'status' => 'paid',
+                        'paid_at' => now(),
+                    ]);
+
+                    if ($payment->application_id) {
+                        Application::where('id', $payment->application_id)
+                            ->where('status', '!=', 'paid')
+                            ->update(['status' => 'paid']);
+                    }
                 }
 
                 if ($type === 'payment_intent.payment_failed') {
@@ -95,7 +105,16 @@ class PaymentWebhookController extends Controller
 
             if ($payment) {
                 if (in_array($eventType, ['CHECKOUT.ORDER.APPROVED', 'CHECKOUT.ORDER.COMPLETED', 'PAYMENT.CAPTURE.COMPLETED'], true)) {
-                    $payment->update(['status' => 'paid']);
+                    $payment->update([
+                        'status' => 'paid',
+                        'paid_at' => now(),
+                    ]);
+
+                    if ($payment->application_id) {
+                        Application::where('id', $payment->application_id)
+                            ->where('status', '!=', 'paid')
+                            ->update(['status' => 'paid']);
+                    }
                 }
 
                 if (in_array($eventType, ['CHECKOUT.ORDER.CANCELLED', 'PAYMENT.CAPTURE.DENIED'], true)) {

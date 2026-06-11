@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { toast } from 'vue-sonner';
 import { Button } from '@/components/ui/button';
 import { RouterLink } from 'vue-router';
 import { CircleHelp, LogOut } from 'lucide-vue-next';
@@ -30,10 +29,6 @@ const displayRole = computed(() => {
   if (props.profile?.role === 'employer') return 'Employer';
   if (props.profile?.role === 'candidate') return 'Candidate';
 
-});
-
-const plan = computed(() => {
-  return 'Free Plan';
 });
 
 const avatarUrl = computed(() => {
@@ -70,6 +65,7 @@ async function handleLogout() {
         </div>
       </div>
       <Button
+        v-if="props.profile?.role !== 'admin'"
         variant="outline"
         class="mt-sm w-full cursor-pointer rounded-lg border-primary px-sm py-xs font-label-md text-label-md text-primary transition-colors hover:bg-surface-variant"
       >
