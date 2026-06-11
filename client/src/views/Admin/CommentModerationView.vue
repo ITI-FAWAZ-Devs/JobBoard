@@ -18,7 +18,7 @@ const search = ref("");
 const { data, isPending, isError } = useQuery({
   queryKey: ["admin", "comments", "flagged", page],
   queryFn: () => getAdminCommentsApi(page.value, true),
-  keepPreviousData: true,
+  placeholderData: (prev) => prev,
 });
 
 const comments = computed<Comment[]>(() => data.value?.data?.data ?? []);

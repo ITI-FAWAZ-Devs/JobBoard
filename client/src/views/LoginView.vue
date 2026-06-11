@@ -203,7 +203,7 @@ function handleLogin() {
 
         <p class="mt-md text-center font-body-sm text-body-sm text-on-surface-variant">
           Don't have an account?
-          <RouterLink class="cursor-pointer font-label-sm text-label-sm text-primary hover:underline" to="/sign-up">
+          <RouterLink class="cursor-pointer font-label-sm text-label-sm text-primary hover:underline" to="/role-select">
             Register
           </RouterLink>
         </p>

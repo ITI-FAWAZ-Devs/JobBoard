@@ -71,4 +71,20 @@ class JobController extends Controller
 
         return new JobListingResource($jobListing);
     }
+
+    public function statistics()
+    {
+        $jobsCount = JobListing::where('status', 'approved')->count();
+        $candidatesCount = \App\Models\User::where('role', 'candidate')->count();
+        $companiesCount = \App\Models\EmployerProfile::count();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'jobs_count' => $jobsCount,
+                'candidates_count' => $candidatesCount,
+                'companies_count' => $companiesCount,
+            ]
+        ]);
+    }
 }

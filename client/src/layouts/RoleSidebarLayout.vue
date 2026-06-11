@@ -32,7 +32,7 @@ const navItemsBySection = {
   ],
   candidate: [
     { label: 'Dashboard', icon: BarChart3, to: '/candidate/dashboard' },
-    { label: 'Browse Jobs', icon: BriefcaseBusiness, to: '/candidate/jobs' },
+    { label: 'Browse Jobs', icon: BriefcaseBusiness, to: '/jobs' },
     { label: 'Applications', icon: FileText, to: '/candidate/applications' },
     { label: 'Profile', icon: User, to: '/candidate/profile' },
     { label: 'Saved Jobs', icon: Heart, to: '/candidate/saved' },
@@ -40,10 +40,11 @@ const navItemsBySection = {
   ],
   employer: [
     { label: 'Dashboard', icon: BarChart3, to: '/employer/dashboard' },
+    { label: 'Post Job', icon: BriefcaseBusiness, to: '/employer/jobs/create' },
+    { label: 'Applications', icon: ClipboardCheck, to: '/employer/applications' },
     { label: 'Analytics', icon: BarChart3, to: '/employer/analytics' },
     { label: 'Checkout', icon: CreditCard, to: '/employer/checkout' },
     { label: 'Profile', icon: User, to: '/employer/profile' },
-    { label: 'Messages', icon: Mail, to: '/employer/messages' },
     { label: 'Settings', icon: Settings, to: '/employer/settings' },
   ],
 } as const;

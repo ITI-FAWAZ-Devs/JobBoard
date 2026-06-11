@@ -16,6 +16,8 @@ import { Button } from '@/components/ui/button';
 import { RouterLink } from 'vue-router';
 import { useProfile } from '@/Hooks/useProfile';
 import type { UserProfile } from '@/types/profile';
+import { useQuery } from '@tanstack/vue-query';
+import { getCandidateDashboardApi } from '@/api/jobs';
 
 const { data: profile } = useProfile();
 
@@ -24,99 +26,133 @@ const userName = computed(() => user.value.name?.trim() || 'Candidate');
 const avatarUrl = computed(() => user.value.avatar_url || '');
 const avatarInitial = computed(() => userName.value.charAt(0).toUpperCase());
 
-const stats = [
-  {
-    label: 'Applied',
-    value: '8',
-    icon: Send,
-    tone: 'bg-blue-50 border-blue-100 text-primary',
-    iconTone: 'bg-blue-100',
-  },
-  {
-    label: 'Saved',
-    value: '12',
-    icon: Bookmark,
-    tone: 'bg-teal-50 border-teal-100 text-secondary',
-    iconTone: 'bg-teal-100',
-  },
-  {
-    label: 'Profile',
-    value: '85% Complete',
-    icon: Sparkles,
-    tone: 'bg-violet-50 border-violet-100 text-violet-700',
-    iconTone: 'bg-violet-100',
-  },
-];
+const { data: dashboardData, isPending } = useQuery({
+  queryKey: ['candidate', 'dashboard'],
+  queryFn: () => getCandidateDashboardApi(),
+});
 
-const recommendedJobs = [
-  {
-    company: 'IBM',
-    title: 'Senior Frontend Developer',
-    meta: 'Remote',
-    tags: ['React', 'TypeScript', '$120k - $150k'],
-    accent: 'bg-slate-100 text-slate-800',
-    cta: 'Apply Now',
-  },
-  {
-    company: 'Google',
-    title: 'UX/UI Designer',
-    meta: 'London, UK',
-    tags: ['Figma', 'Prototyping', 'Hybrid'],
-    accent: 'bg-blue-100 text-blue-700',
-    cta: 'Apply Now',
-  },
-  {
-    company: 'Vercel',
-    title: 'Product Manager',
-    meta: 'San Francisco, CA',
-    tags: ['Agile', 'SaaS', 'Remote'],
-    accent: 'bg-black text-white',
-    cta: 'Apply Now',
-  },
-  {
-    company: 'Stripe',
-    title: 'Backend Engineer',
-    meta: 'New York, NY',
-    tags: ['Node.js', 'PostgreSQL', 'On-site'],
-    accent: 'bg-blue-600 text-white',
-    cta: 'Apply Now',
-  },
-];
+const stats = computed(() => {
+  const s = dashboardData.value?.data?.stats;
+  return [
+    {
+      label: 'Applied',
+      value: isPending.value ? '...' : String(s?.applied_count ?? 0),
+      icon: Send,
+      tone: 'bg-blue-50 border-blue-100 text-primary',
+      iconTone: 'bg-blue-100',
+    },
+    {
+      label: 'Saved',
+      value: isPending.value ? '...' : String(s?.saved_count ?? 0),
+      icon: Bookmark,
+      tone: 'bg-teal-50 border-teal-100 text-secondary',
+      iconTone: 'bg-teal-100',
+    },
+    {
+      label: 'Profile',
+      value: isPending.value ? '...' : `${s?.profile_complete_percent ?? 20}% Complete`,
+      icon: Sparkles,
+      tone: 'bg-violet-50 border-violet-100 text-violet-700',
+      iconTone: 'bg-violet-100',
+    },
+  ];
+});
 
-const applications = [
-  { title: 'Senior UX Designer', company: 'Uber', date: 'Oct 24, 2023', status: 'Pending', statusClass: 'bg-blue-100 text-blue-800' },
-  { title: 'Frontend Engineer', company: 'Spotify', date: 'Oct 20, 2023', status: 'Reviewed', statusClass: 'bg-violet-100 text-violet-800' },
-  { title: 'Product Designer', company: 'Airbnb', date: 'Oct 15, 2023', status: 'Accepted', statusClass: 'bg-green-100 text-green-800' },
-  { title: 'UI Developer', company: 'Meta', date: 'Oct 10, 2023', status: 'Rejected', statusClass: 'bg-red-100 text-red-800' },
-];
+const recommendedJobs = computed(() => {
+  const jobs = dashboardData.value?.data?.recommended_jobs ?? [];
+  return jobs.map((job: any, index: number) => {
+    const accents = [
+      'bg-slate-100 text-slate-800',
+      'bg-blue-100 text-blue-700',
+      'bg-purple-100 text-purple-700',
+      'bg-green-100 text-green-700'
+    ];
+    const accent = accents[index % accents.length];
+    
+    const salaryFmt = (n: number) => n >= 1000 ? `$${(n / 1000).toFixed(0)}k` : `$${n}`;
+    const salaryTag = (job.salary_min || job.salary_max) 
+      ? (job.salary_min && job.salary_max 
+          ? `${salaryFmt(job.salary_min)} - ${salaryFmt(job.salary_max)}` 
+          : (job.salary_min ? `From ${salaryFmt(job.salary_min)}` : `Up to ${salaryFmt(job.salary_max)}`))
+      : null;
 
-const savedJobs = [
-  { company: 'Amazon', title: 'Data Analyst', badge: 'A', badgeClass: 'bg-orange-100 text-orange-600' },
-  { company: 'Microsoft', title: 'Cloud Architect', badge: 'M', badgeClass: 'bg-blue-100 text-blue-600' },
-  { company: 'Netflix', title: 'Full Stack Dev', badge: 'N', badgeClass: 'bg-red-100 text-red-600' },
-];
+    const tags = [job.work_type, salaryTag].filter(Boolean) as string[];
 
-const activity = [
-  {
-    title: 'Google viewed your application',
-    meta: '2 hours ago',
-    icon: Eye,
-    iconClass: 'bg-blue-100 text-primary',
-  },
-  {
-    title: 'Application approved by Airbnb',
-    meta: 'Yesterday',
-    icon: UserRound,
-    iconClass: 'bg-green-100 text-success',
-  },
-  {
-    title: '5 new jobs match your profile',
-    meta: '2 days ago',
-    icon: Sparkles,
-    iconClass: 'bg-violet-100 text-violet-600',
-  },
-];
+    return {
+      id: job.id,
+      company: job.company_name || 'Company',
+      title: job.title,
+      meta: job.location || 'Remote',
+      tags,
+      accent,
+      cta: 'Apply Now',
+    };
+  });
+});
 
+const statusClasses: Record<string, string> = {
+  pending: 'bg-blue-100 text-blue-800',
+  reviewed: 'bg-violet-100 text-violet-800',
+  interviewed: 'bg-amber-100 text-amber-800',
+  accepted: 'bg-green-100 text-green-800',
+  rejected: 'bg-red-100 text-red-800',
+  paid: 'bg-emerald-100 text-emerald-800',
+};
+
+const applications = computed(() => {
+  const apps = dashboardData.value?.data?.recent_applications ?? [];
+  return apps.map((app: any) => ({
+    id: app.id,
+    title: app.job?.title || 'Position',
+    company: app.job?.company_name || 'Company',
+    date: app.created_at || 'Recently',
+    status: app.status.charAt(0).toUpperCase() + app.status.slice(1),
+    statusClass: statusClasses[app.status] ?? 'bg-slate-100 text-slate-800',
+  }));
+});
+
+const savedJobs = computed(() => {
+  const jobs = dashboardData.value?.data?.saved_jobs ?? [];
+  const badgeClasses = [
+    'bg-orange-100 text-orange-600',
+    'bg-blue-100 text-blue-600',
+    'bg-red-100 text-red-600',
+    'bg-green-100 text-green-600',
+  ];
+  return jobs.map((item: any, index: number) => ({
+    id: item.job?.id,
+    company: item.job?.company_name || 'Company',
+    title: item.job?.title || 'Saved Job',
+    badge: (item.job?.company_name || 'C').charAt(0).toUpperCase(),
+    badgeClass: badgeClasses[index % badgeClasses.length],
+  }));
+});
+
+const activity = computed(() => {
+  const list = dashboardData.value?.data?.activity ?? [];
+  return list.map((item: any) => {
+    let title = 'Notification received';
+    let icon = Sparkles;
+    let iconClass = 'bg-violet-100 text-violet-600';
+
+    if (item.type === 'JobStatusChanged') {
+      title = `Job "${item.data?.job_title}" is ${item.data?.status}`;
+      icon = Eye;
+      iconClass = 'bg-blue-100 text-primary';
+    } else if (item.type === 'UserStatusChanged') {
+      title = `Your account status is ${item.data?.status}`;
+      icon = UserRound;
+      iconClass = 'bg-green-100 text-success';
+    }
+
+    return {
+      title,
+      meta: item.meta || item.created_at || 'Recently',
+      icon,
+      iconClass,
+    };
+  });
+});
 </script>
 
 <template>

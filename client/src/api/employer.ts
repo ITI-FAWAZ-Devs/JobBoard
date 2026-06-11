@@ -107,3 +107,32 @@ export const getEmployerAnalyticsApi = async () => {
   const res = await api.get("/employer/analytics");
   return res.data as { status: string; data: AnalyticsData };
 };
+
+export const createOfficeApi = async (data: { name: string; address: string; is_headquarters: boolean }) => {
+  const res = await api.post("/offices", data);
+  return res.data;
+};
+
+export const updateOfficeApi = async (id: number, data: { name: string; address: string; is_headquarters: boolean }) => {
+  const res = await api.put(`/offices/${id}`, data);
+  return res.data;
+};
+
+export const deleteOfficeApi = async (id: number) => {
+  const res = await api.delete(`/offices/${id}`);
+  return res.data;
+};
+
+export const uploadGalleryPhotoApi = async (file: File) => {
+  const formData = new FormData();
+  formData.append("photo", file);
+  const res = await api.post("/gallery-photos", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+};
+
+export const deleteGalleryPhotoApi = async (id: number) => {
+  const res = await api.delete(`/gallery-photos/${id}`);
+  return res.data;
+};
