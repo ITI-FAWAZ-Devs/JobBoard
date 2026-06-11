@@ -71,7 +71,7 @@ async function handleSave() {
     <main class="mx-auto w-full max-w-container-max flex-1 p-md md:p-lg">
       <div class="mb-xl">
         <h1 class="font-headline-lg text-headline-lg text-on-background">Settings</h1>
-        <p class="mt-1 font-body-md text-body-md text-on-surface-variant">
+        <p class="mt-1 font-body-md text-body-md leading-relaxed text-on-surface-variant">
           Update your admin account details.
         </p>
       </div>

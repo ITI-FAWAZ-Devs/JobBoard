@@ -45,7 +45,7 @@ function toggleFaq(key: string) {
     <main class="mx-auto w-full max-w-container-max flex-1 p-md md:p-lg">
       <div class="mb-xl">
         <h1 class="font-headline-lg text-headline-lg text-on-background">Help Center</h1>
-        <p class="mt-1 font-body-md text-body-md text-on-surface-variant">
+        <p class="mt-1 font-body-md text-body-md leading-relaxed text-on-surface-variant">
           Find answers to common questions and learn how to make the most of WorkHive.
         </p>
       </div>
@@ -86,7 +86,7 @@ function toggleFaq(key: string) {
               <MessageCircle class="h-5 w-5 text-primary" aria-hidden="true" />
               <h2 class="font-headline-md text-headline-md text-on-background">Still Need Help?</h2>
             </div>
-            <p class="font-body-md text-body-md text-on-surface-variant max-w-lg text-left">
+            <p class="font-body-md text-body-md leading-relaxed text-on-surface-variant max-w-lg text-left">
               Didn't find the answer you need? Contact our support team for personalized assistance.
             </p>
             <a

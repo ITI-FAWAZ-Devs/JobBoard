@@ -7,6 +7,7 @@ import {
   Briefcase,
   Building2,
   Calendar,
+  CheckCircle2,
   Clock,
   DollarSign,
   Eye,
@@ -191,7 +192,7 @@ function formatDate(dateStr?: string | null) {
 
       <!-- Error -->
       <div v-else-if="isError || !job" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center">
-        <p class="text-on-surface-variant">Job not found or failed to load.</p>
+        <p class="text-sm leading-relaxed text-on-surface-variant">Job not found or failed to load.</p>
         <Button variant="outline" class="mt-4" @click="router.push('/jobs')">Browse Jobs</Button>
       </div>
 
@@ -232,12 +233,20 @@ function formatDate(dateStr?: string | null) {
                 {{ isSaved ? 'Saved' : 'Save Job' }}
               </Button>
               <Button
+                v-if="!job?.has_applied"
                 class="gap-2 rounded-xl bg-primary px-6 text-white hover:bg-primary/90 cursor-pointer"
                 @click="showApplyModal = true"
               >
                 <Send class="h-4 w-4" />
                 Apply Now
               </Button>
+              <div
+                v-else
+                class="inline-flex items-center gap-2 rounded-xl bg-secondary/10 px-6 py-2.5 text-sm font-medium text-secondary"
+              >
+                <CheckCircle2 class="h-4 w-4" />
+                Applied
+              </div>
             </div>
             <RouterLink
               v-else-if="!isLoggedIn"
@@ -347,7 +356,7 @@ function formatDate(dateStr?: string | null) {
                   <p class="text-sm leading-relaxed text-on-surface-variant">{{ comment.content }}</p>
                 </article>
               </div>
-              <p v-else class="text-center text-sm text-on-surface-variant">
+              <p v-else class="text-center text-sm leading-relaxed text-on-surface-variant">
                 No comments yet. Be the first to share your thoughts.
               </p>
             </section>
@@ -364,7 +373,7 @@ function formatDate(dateStr?: string | null) {
                 </div>
                 <div>
                   <p class="text-sm font-medium text-on-surface">{{ job.employer_profile?.company_name }}</p>
-                  <p v-if="job.employer_profile?.location" class="text-xs text-on-surface-variant">{{ job.employer_profile.location }}</p>
+                  <p v-if="job.employer_profile?.location" class="text-xs leading-relaxed text-on-surface-variant">{{ job.employer_profile.location }}</p>
                 </div>
               </div>
               <p v-if="job.employer_profile?.description" class="mt-3 line-clamp-4 text-xs leading-relaxed text-on-surface-variant">
@@ -383,9 +392,9 @@ function formatDate(dateStr?: string | null) {
             </div>
 
             <!-- Apply CTA -->
-            <div v-if="isCandidate" class="rounded-2xl border border-primary/20 bg-primary/5 p-5">
+            <div v-if="isCandidate && !job?.has_applied" class="rounded-2xl border border-primary/20 bg-primary/5 p-5">
               <h3 class="mb-2 text-sm font-semibold text-on-surface">Interested in this role?</h3>
-              <p class="mb-3 text-xs text-on-surface-variant">Submit your application with a resume and cover letter.</p>
+              <p class="mb-3 text-xs leading-relaxed text-on-surface-variant">Submit your application with a resume and cover letter.</p>
               <div class="flex flex-col gap-2">
                 <Button class="w-full gap-2 rounded-lg cursor-pointer" @click="showApplyModal = true">
                   <Send class="h-4 w-4" />
@@ -396,6 +405,17 @@ function formatDate(dateStr?: string | null) {
                   {{ isSaved ? 'Saved to Bookmarks' : 'Save Job' }}
                 </Button>
               </div>
+            </div>
+            <div v-else-if="isCandidate && job?.has_applied" class="rounded-2xl border border-secondary/20 bg-secondary/5 p-5">
+              <div class="flex items-center gap-2 mb-2">
+                <CheckCircle2 class="h-5 w-5 text-secondary" />
+                <h3 class="text-sm font-semibold text-on-surface">Application Submitted</h3>
+              </div>
+              <p class="mb-3 text-xs leading-relaxed text-on-surface-variant">You have already applied for this position. Check your applications for updates.</p>
+              <Button variant="outline" class="w-full gap-2 rounded-lg cursor-pointer" @click="handleToggleSave">
+                <Bookmark class="h-4 w-4 text-primary" :class="{ 'fill-primary': isSaved }" />
+                {{ isSaved ? 'Saved to Bookmarks' : 'Save Job' }}
+              </Button>
             </div>
           </aside>
         </div>
@@ -419,30 +439,33 @@ function formatDate(dateStr?: string | null) {
           class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
           @click.self="showApplyModal = false"
         >
-          <div class="w-full max-w-lg rounded-2xl bg-surface-container-lowest p-6 shadow-xl">
-            <div class="mb-5 flex items-center justify-between">
-              <h2 class="text-lg font-semibold text-on-surface">Apply for {{ job?.title }}</h2>
+          <div class="w-full max-w-2xl rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-8 shadow-xl max-h-[85vh] overflow-y-auto">
+            <div class="mb-6 flex items-center justify-between">
+              <h2 class="text-xl font-semibold text-on-surface">Apply for {{ job?.title }}</h2>
               <button class="text-on-surface-variant hover:text-on-surface" @click="showApplyModal = false">
                 <X class="h-5 w-5" />
               </button>
             </div>
 
-            <div class="space-y-4">
+            <div class="space-y-6">
               <div>
-                <label class="mb-1.5 block text-sm font-medium text-on-surface">Cover Letter</label>
+                <label class="mb-2 block text-sm font-medium text-on-surface">Cover Letter <span class="text-on-surface-variant">(optional)</span></label>
                 <textarea
                   v-model="coverLetter"
-                  rows="5"
+                  rows="7"
                   placeholder="Tell the employer why you're a great fit..."
-                  class="w-full rounded-xl border border-outline-variant bg-surface px-4 py-3 text-sm placeholder:text-on-surface-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  class="w-full resize-y rounded-xl border border-outline-variant bg-surface px-4 py-3.5 text-sm placeholder:text-on-surface-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div>
-                <label class="mb-1.5 block text-sm font-medium text-on-surface">Resume (optional)</label>
-                <div class="relative rounded-xl border-2 border-dashed border-outline-variant bg-surface p-4 text-center transition-colors hover:border-primary/40">
-                  <Upload class="mx-auto mb-2 h-6 w-6 text-on-surface-variant" />
-                  <p class="text-xs text-on-surface-variant">
+                <label class="mb-2 block text-sm font-medium text-on-surface">Resume (optional)</label>
+                <div
+                  class="relative rounded-xl border-2 border-dashed p-6 text-center transition-colors hover:border-primary/40"
+                  :class="resumeFile ? 'border-primary bg-primary/5' : 'border-outline-variant bg-surface'"
+                >
+                  <Upload class="mx-auto mb-3 h-8 w-8" :class="resumeFile ? 'text-primary' : 'text-on-surface-variant'" />
+                  <p class="text-sm" :class="resumeFile ? 'font-medium text-primary' : 'text-on-surface-variant'">
                     {{ resumeFile ? resumeFile.name : "Click to upload PDF, DOCX, or DOC (max 5MB)" }}
                   </p>
                   <input
@@ -455,10 +478,10 @@ function formatDate(dateStr?: string | null) {
               </div>
             </div>
 
-            <div class="mt-6 flex justify-end gap-3">
-              <Button variant="outline" class="rounded-lg" @click="showApplyModal = false">Cancel</Button>
+            <div class="mt-8 flex justify-end gap-4">
+              <Button variant="outline" class="rounded-lg px-5 py-2.5" @click="showApplyModal = false">Cancel</Button>
               <Button
-                class="rounded-lg gap-2"
+                class="rounded-lg gap-2 px-5 py-2.5"
                 :disabled="applyMutation.isPending.value"
                 @click="applyMutation.mutate()"
               >

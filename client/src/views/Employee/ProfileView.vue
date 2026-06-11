@@ -496,7 +496,7 @@ const perksArr = computed(() => form.perks.split(',').map(s => s.trim()).filter(
                       {{ office.name || 'Office' }}
                       <span v-if="office.is_headquarters" class="ml-2 rounded bg-primary/10 px-2 py-0.5 font-label-sm text-label-sm text-primary">HQ</span>
                     </p>
-                    <p class="font-body-sm text-body-sm text-on-surface-variant">{{ office.address }}</p>
+                    <p class="font-body-sm text-body-sm leading-relaxed text-on-surface-variant">{{ office.address }}</p>
                   </div>
                 </div>
               </div>

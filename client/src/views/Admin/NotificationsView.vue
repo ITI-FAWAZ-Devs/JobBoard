@@ -66,7 +66,7 @@ function getNotificationText(n: NotificationData): string {
     <div class="mb-xl flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="font-headline-lg text-headline-lg text-on-background">System Alerts</h1>
-        <p class="mt-1 font-body-md text-body-md text-on-surface-variant">
+        <p class="mt-1 font-body-md text-body-md leading-relaxed text-on-surface-variant">
           Review system alerts, flag notifications, and platform updates.
         </p>
       </div>
@@ -93,7 +93,7 @@ function getNotificationText(n: NotificationData): string {
 
     <!-- Error -->
     <div v-else-if="isError" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center">
-      <p class="text-sm text-on-surface-variant">Failed to load notifications. Please try again.</p>
+      <p class="text-sm leading-relaxed text-on-surface-variant">Failed to load notifications. Please try again.</p>
     </div>
 
     <!-- Empty State -->
@@ -102,7 +102,7 @@ function getNotificationText(n: NotificationData): string {
         <Bell class="h-6 w-6" />
       </div>
       <h3 class="mb-1 text-lg font-semibold text-on-surface">No alerts</h3>
-      <p class="text-sm text-on-surface-variant">All platform notifications are cleared.</p>
+      <p class="text-sm leading-relaxed text-on-surface-variant">All platform notifications are cleared.</p>
     </div>
 
     <!-- Notifications List -->

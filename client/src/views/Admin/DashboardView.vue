@@ -23,7 +23,7 @@ const dashboard = computed<AdminDashboard | null>(() => data.value?.data ?? null
       <div class="mb-xl flex flex-col justify-between gap-sm md:flex-row md:items-center">
         <div>
           <h1 class="font-headline-lg text-headline-lg text-on-background">Platform Overview</h1>
-          <p class="mt-1 font-body-md text-body-md text-on-surface-variant">
+          <p class="mt-1 font-body-md text-body-md leading-relaxed text-on-surface-variant">
             Monitor activity and manage content across WorkHive.
           </p>
         </div>
@@ -52,7 +52,7 @@ const dashboard = computed<AdminDashboard | null>(() => data.value?.data ?? null
           <div>
             <p class="mb-1 font-label-md text-label-md text-on-surface-variant">Total Users</p>
             <h3 class="font-headline-xl text-headline-xl text-on-background">{{ dashboard?.users.total ?? '—' }}</h3>
-            <p class="font-body-xs text-body-xs text-on-surface-variant">
+            <p class="font-body-xs text-body-xs leading-relaxed text-on-surface-variant">
               {{ dashboard?.users.employers ?? '—' }} employers · {{ dashboard?.users.candidates ?? '—' }} candidates
             </p>
           </div>
@@ -79,7 +79,7 @@ const dashboard = computed<AdminDashboard | null>(() => data.value?.data ?? null
           <div>
             <p class="mb-1 font-label-md text-label-md text-on-surface-variant">Jobs Breakdown</p>
             <h3 class="font-headline-xl text-headline-xl text-on-background">{{ dashboard?.jobs.total ?? '—' }}</h3>
-            <p class="font-body-xs text-body-xs text-on-surface-variant">
+            <p class="font-body-xs text-body-xs leading-relaxed text-on-surface-variant">
               {{ dashboard?.jobs.approved ?? '—' }} approved · {{ dashboard?.jobs.rejected ?? '—' }} rejected
             </p>
           </div>
@@ -106,7 +106,7 @@ const dashboard = computed<AdminDashboard | null>(() => data.value?.data ?? null
               <div class="flex flex-wrap items-center justify-between gap-md">
                 <div>
                   <p class="font-label-md text-label-md text-on-background">{{ job.title }}</p>
-                  <p class="font-body-sm text-body-sm text-on-surface-variant">
+                  <p class="font-body-sm text-body-sm leading-relaxed text-on-surface-variant">
                     {{ job.company_name || 'Unknown company' }}
                     <span v-if="job.location"> - {{ job.location }}</span>
                   </p>
@@ -133,10 +133,10 @@ const dashboard = computed<AdminDashboard | null>(() => data.value?.data ?? null
                   <span>{{ comment.user_name }}</span>
                   <span>{{ comment.created_at }}</span>
                 </div>
-                <p class="mt-sm font-body-sm text-body-sm text-on-background">
+                <p class="mt-sm font-body-sm text-body-sm leading-relaxed text-on-background">
                   "{{ comment.content }}"
                 </p>
-                <p class="mt-xs font-body-xs text-body-xs text-on-surface-variant">
+                <p class="mt-xs font-body-xs text-body-xs leading-relaxed text-on-surface-variant">
                   on {{ comment.job_title }}
                 </p>
                 <div class="mt-sm flex items-center gap-sm">

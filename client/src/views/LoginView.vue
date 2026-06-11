@@ -88,9 +88,9 @@ function handleLogin() {
 
       <div class="rounded-xl bg-surface-container-lowest p-md shadow-[0px_20px_40px_rgba(0,0,0,0.1)] md:p-lg">
         <h1 class="mb-xs text-center font-headline-md text-headline-md">Welcome back</h1>
-        <p class="mb-md text-center font-body-sm text-body-sm text-on-surface-variant">
-          Enter your details to access your account.
-        </p>
+<p class="mb-md text-center font-body-sm text-body-sm leading-relaxed text-on-surface-variant">
+              Enter your details to access your account.
+            </p>
 
         <form class="space-y-md" @submit.prevent="handleLogin">
           <div>
@@ -201,7 +201,7 @@ function handleLogin() {
           </Button>
         </div>
 
-        <p class="mt-md text-center font-body-sm text-body-sm text-on-surface-variant">
+        <p class="mt-md text-center font-body-sm text-body-sm leading-relaxed text-on-surface-variant">
           Don't have an account?
           <RouterLink class="cursor-pointer font-label-sm text-label-sm text-primary hover:underline" to="/role-select">
             Register

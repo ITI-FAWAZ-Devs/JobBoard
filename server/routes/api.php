@@ -43,7 +43,6 @@ Route::prefix('v1')->group(function (): void {
     });
 
     Route::post('/payments/stripe/webhook', [PaymentWebhookController::class, 'stripe']);
-    Route::post('/payments/paypal/webhook', [PaymentWebhookController::class, 'paypal']);
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
@@ -80,11 +79,11 @@ Route::prefix('v1')->group(function (): void {
         Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
         Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
 
-        // Aligned payments API (employer only, no employer prefix in URL)
+        // Payments (employer only)
         Route::middleware('role:employer')->group(function (): void {
             Route::get('/applications/{application}/checkout', [EmployerPaymentController::class, 'getCheckout']);
-            Route::post('/payments/stripe', [EmployerPaymentController::class, 'payStripe']);
-            Route::post('/payments/paypal', [EmployerPaymentController::class, 'payPayPal']);
+            Route::post('/payments/stripe/session', [EmployerPaymentController::class, 'createCheckoutSession']);
+            Route::get('/applications/{application}/payment/status', [EmployerPaymentController::class, 'verifySessionStatus']);
             Route::get('/applications/{application}/contact', [EmployerPaymentController::class, 'getContact']);
         });
 
@@ -103,9 +102,6 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/applications', [EmployerApplicationController::class, 'index']);
             Route::patch('/applications/{application}/accept', [EmployerApplicationController::class, 'accept']);
             Route::patch('/applications/{application}/reject', [EmployerApplicationController::class, 'reject']);
-
-            Route::post('/payments/stripe/intent', [EmployerPaymentController::class, 'createStripeIntent']);
-            Route::post('/payments/paypal/order', [EmployerPaymentController::class, 'createPayPalOrder']);
         });
 
         Route::middleware('role:admin')->prefix('admin')->group(function (): void {

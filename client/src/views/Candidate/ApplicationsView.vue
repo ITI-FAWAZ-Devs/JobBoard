@@ -74,7 +74,7 @@ function formatDate(dateStr: string) {
     <main class="mx-auto w-full max-w-container-max flex-1 p-md md:p-lg">
       <div class="mb-xl">
         <h1 class="font-headline-lg text-headline-lg text-on-background">My Applications</h1>
-        <p class="mt-1 font-body-md text-body-md text-on-surface-variant">
+        <p class="mt-1 font-body-md text-body-md leading-relaxed text-on-surface-variant">
           Track and manage your job applications.
         </p>
       </div>
@@ -89,14 +89,14 @@ function formatDate(dateStr: string) {
 
       <!-- Error -->
       <div v-else-if="isError" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center">
-        <p class="text-sm text-on-surface-variant">Failed to load applications. Please try again.</p>
+        <p class="text-sm leading-relaxed text-on-surface-variant">Failed to load applications. Please try again.</p>
       </div>
 
       <!-- Empty -->
       <div v-else-if="!applications.length" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-12 text-center">
         <FileText class="mx-auto mb-3 h-12 w-12 text-on-surface-variant/40" />
         <h3 class="mb-1 text-lg font-semibold text-on-surface">No applications yet</h3>
-        <p class="text-sm text-on-surface-variant">Start browsing jobs and apply to get started.</p>
+        <p class="text-sm leading-relaxed text-on-surface-variant">Start browsing jobs and apply to get started.</p>
       </div>
 
       <!-- Applications list -->

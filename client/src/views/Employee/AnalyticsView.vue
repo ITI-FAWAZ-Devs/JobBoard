@@ -93,7 +93,7 @@ const lineChartSeries = computed(() => [
       <div class="mb-xl flex flex-col justify-between gap-sm md:flex-row md:items-center">
         <div>
           <h1 class="font-headline-lg text-headline-lg text-on-background">Analytics</h1>
-          <p class="mt-1 font-body-md text-body-md text-on-surface-variant">
+          <p class="mt-1 font-body-md text-body-md leading-relaxed text-on-surface-variant">
             Track your job listing performance.
           </p>
         </div>

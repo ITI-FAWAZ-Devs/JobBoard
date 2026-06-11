@@ -44,6 +44,7 @@ export type JobListingPublic = {
     id: number;
     name: string;
   } | null;
+  has_applied?: boolean;
 };
 
 export type PaginatedJobs = {
