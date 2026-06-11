@@ -31,7 +31,7 @@ const candidatesQuery = useQuery({
 const jobs = computed<JobListing[]>(() => {
   const payload = jobsQuery.data.value;
   if (Array.isArray(payload)) return payload as JobListing[];
-  return payload?.data?.data ?? [];
+  return payload?.data ?? [];
 });
 
 const candidates = computed<CandidateSummary[]>(() => candidatesQuery.data.value?.data?.data ?? []);

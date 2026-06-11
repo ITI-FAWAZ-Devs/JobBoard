@@ -16,7 +16,7 @@ import {
 import Navbar from "@/components/shared/Navbar.vue";
 import Footer from "@/components/shared/Footer.vue";
 import { Button } from "@/components/ui/button";
-import { getCompaniesApi, type CompanyProfile } from "@/api/jobs";
+import { getCompaniesApi, getCompanyFiltersApi, type CompanyProfile } from "@/api/jobs";
 import { toast } from "vue-sonner";
 
 const searchVal = ref("");
@@ -30,13 +30,13 @@ const selectedSizes = ref<string[]>([]);
 const selectedLocations = ref<string[]>([]);
 const locationSearch = ref("");
 
-const industriesList = [
-  { label: "Programming", count: 142 },
-  { label: "Marketing", count: 85 },
-  { label: "Finance", count: 64 },
-  { label: "Design", count: 43 },
-  { label: "Sales", count: 112 },
-];
+const { data: filtersData } = useQuery({
+  queryKey: ["company-filters"],
+  queryFn: getCompanyFiltersApi,
+});
+
+const industriesList = computed(() => filtersData.value?.data?.industries ?? []);
+const locationsList = computed(() => filtersData.value?.data?.locations ?? []);
 
 const sizesList = [
   { label: "1-10 Employees", value: "1-10" },
@@ -46,11 +46,6 @@ const sizesList = [
   { label: "501+ Employees", value: "501+" },
 ];
 
-const locationsList = [
-  { label: "Remote", value: "Remote", count: 320 },
-  { label: "San Francisco, CA", value: "San Francisco, CA", count: 85 },
-  { label: "New York, NY", value: "New York, NY", count: 72 },
-];
 
 const router = useRouter();
 
@@ -90,10 +85,13 @@ const popularCompanies = computed<CompanyProfile[]>(() =>
 
 // Search and location filtering
 const filteredLocationsList = computed(() => {
-  if (!locationSearch.value.trim()) return locationsList;
+  if (!locationSearch.value.trim()) return locationsList.value;
   const q = locationSearch.value.toLowerCase();
-  return locationsList.filter(loc => loc.label.toLowerCase().includes(q));
+  return locationsList.value.filter((loc: { label: string; value: string; count: number }) => 
+    loc.label.toLowerCase().includes(q)
+  );
 });
+
 
 function toggleIndustry(ind: string) {
   const idx = selectedIndustries.value.indexOf(ind);
@@ -172,18 +170,18 @@ function openWebsite(url?: string | null) {
         <p class="font-body-lg text-body-lg leading-relaxed text-on-surface-variant mb-lg">
           Discover top employers and find your future workplace. Explore company cultures, benefits, and open roles.
         </p>
-        <div class="relative w-full max-w-xl mx-auto custom-shadow-soft rounded-full bg-surface-container-lowest flex items-center p-2 border border-outline-variant focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
-          <Search class="text-outline ml-3 h-5 w-5 pointer-events-none" />
+        <div class="relative w-full mx-auto custom-shadow-soft rounded-full bg-surface-container-lowest flex items-center p-1.5 border border-outline-variant focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+          <Search class="text-on-surface-variant ml-3 h-5 w-5 pointer-events-none flex-shrink-0" />
           <input 
             v-model="searchVal"
             @keyup.enter="triggerSearch"
-            class="flex-grow bg-transparent border-none focus:ring-0 text-body-md font-body-md text-on-surface px-sm outline-none placeholder:text-outline w-full" 
+            class="flex-grow bg-transparent border-0 focus:ring-0 focus:ring-offset-0 focus:outline-none text-body-md font-body-md text-on-surface pl-2 pr-4 placeholder:text-outline w-full" 
             placeholder="Search companies by name, industry, or keyword..." 
             type="text"
           />
           <button 
             @click="triggerSearch"
-            class="bg-primary text-on-primary font-label-md text-label-md px-lg py-2 rounded-full hover:bg-primary-container transition-colors flex-shrink-0 cursor-pointer"
+            class="bg-primary text-on-primary font-label-md text-label-md px-md py-2 rounded-full hover:bg-primary-container transition-colors flex-shrink-0 cursor-pointer shadow-sm"
           >
             Search
           </button>
@@ -225,12 +223,12 @@ function openWebsite(url?: string | null) {
                   {{ company.company_name?.charAt(0) || '?' }}
                 </span>
               </div>
-              <div>
-                <h3 class="font-headline-sm text-headline-sm text-on-background group-hover:text-primary transition-colors">
+              <div class="min-w-0 flex-1">
+                <h3 class="font-headline-sm text-headline-sm text-on-background group-hover:text-primary transition-colors leading-snug truncate">
                   {{ company.company_name }}
                 </h3>
-                <p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
-                  <Briefcase class="h-4 w-4 text-on-surface-variant" />
+                <p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 leading-relaxed truncate">
+                  <Briefcase class="h-4 w-4 text-on-surface-variant flex-shrink-0" />
                   {{ company.industry || 'Tech Company' }}
                 </p>
               </div>
@@ -427,22 +425,22 @@ function openWebsite(url?: string | null) {
                 </button>
               </div>
               
-              <h3 class="font-headline-sm text-headline-sm text-on-background mb-1 truncate">
+              <h3 class="font-headline-sm text-headline-sm text-on-background mb-1 truncate leading-snug">
                 {{ company.company_name }}
               </h3>
               
-              <p class="font-body-sm text-body-sm text-on-surface-variant mb-3">
+              <p class="font-body-sm text-body-sm text-on-surface-variant mb-3 leading-relaxed truncate">
                 {{ company.industry || 'Tech Company' }}
               </p>
               
               <div class="flex flex-col gap-2 mb-md">
-                <div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
-                  <MapPin class="h-4 w-4 text-outline" /> 
-                  {{ company.location || 'Remote' }}
+                <div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm leading-normal truncate">
+                  <MapPin class="h-4 w-4 text-outline flex-shrink-0" /> 
+                  <span class="truncate">{{ company.location || 'Remote' }}</span>
                 </div>
-                <div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
-                  <Users class="h-4 w-4 text-outline" /> 
-                  {{ company.employee_count ? company.employee_count + ' employees' : 'N/A employees' }}
+                <div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm leading-normal truncate">
+                  <Users class="h-4 w-4 text-outline flex-shrink-0" /> 
+                  <span class="truncate">{{ company.employee_count ? company.employee_count + ' employees' : 'N/A employees' }}</span>
                 </div>
               </div>
               

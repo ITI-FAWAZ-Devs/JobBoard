@@ -81,6 +81,18 @@ class JobController extends Controller
 
         $jobListing->increment('views_count');
 
+        try {
+            \App\Models\JobView::create([
+                'job_listing_id' => $jobListing->id,
+                'user_id' => Auth::guard('sanctum')->id(),
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'viewed_at' => now(),
+            ]);
+        } catch (\Exception $e) {
+            // Silently fail if there's any issue with tracking to not block showing the job
+        }
+
         $jobListing->load(['employerProfile', 'category']);
 
         $user = Auth::guard('sanctum')->user();

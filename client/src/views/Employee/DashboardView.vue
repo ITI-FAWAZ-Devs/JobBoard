@@ -10,32 +10,22 @@ import api from "@/api/api";
 
 const page = ref(1);
 
-const analyticsQuery = useQuery({
+const { data: analyticsResponse } = useQuery({
   queryKey: ["employer", "analytics"],
-  queryFn: () => getEmployerAnalyticsApi(),
+  queryFn: getEmployerAnalyticsApi,
 });
 
-const jobsQuery = useQuery({
+const { data: jobsResponse } = useQuery({
   queryKey: ["employer", "jobs", page],
   queryFn: () => getEmployerJobsApi(page.value),
 });
 
 const analytics = computed(() => {
-  const d = analyticsQuery.data;
-  if (!d) return null;
-  if ("data" in d && d.data && typeof d.data === "object" && "views" in d.data) return d.data as { views: number; applicants: number; conversion_rate: number };
-  return null;
+  return analyticsResponse.value?.data ?? null;
 });
 
 const jobs = computed<JobListing[]>(() => {
-  const d = jobsQuery.data;
-  if (!d) return [];
-  if (Array.isArray(d)) return d as JobListing[];
-  const inner = (d as any)?.data;
-  if (Array.isArray(inner)) return inner as JobListing[];
-  const innerData = (d as any)?.data?.data;
-  if (Array.isArray(innerData)) return innerData as JobListing[];
-  return [];
+  return jobsResponse.value?.data ?? [];
 });
 
 const totalJobs = computed(() => jobs.value.length);

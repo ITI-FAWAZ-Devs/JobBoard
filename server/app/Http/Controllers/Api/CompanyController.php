@@ -94,4 +94,41 @@ class CompanyController extends Controller
             ],
         ]);
     }
+
+    public function filters(): JsonResponse
+    {
+        $industries = EmployerProfile::select('industry')
+            ->selectRaw('count(*) as count')
+            ->whereNotNull('industry')
+            ->where('industry', '!=', '')
+            ->groupBy('industry')
+            ->orderBy('count', 'desc')
+            ->get()
+            ->map(fn ($item) => [
+                'label' => $item->industry,
+                'count' => (int) $item->count,
+            ]);
+
+        $locations = EmployerProfile::select('location')
+            ->selectRaw('count(*) as count')
+            ->whereNotNull('location')
+            ->where('location', '!=', '')
+            ->groupBy('location')
+            ->orderBy('count', 'desc')
+            ->get()
+            ->map(fn ($item) => [
+                'label' => $item->location,
+                'value' => $item->location,
+                'count' => (int) $item->count,
+            ]);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'industries' => $industries,
+                'locations' => $locations,
+            ],
+        ]);
+    }
 }
+

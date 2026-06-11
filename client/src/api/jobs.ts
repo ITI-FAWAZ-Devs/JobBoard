@@ -244,3 +244,74 @@ export const getCompaniesApi = async (filters: CompanyFilters = {}) => {
   const res = await api.get("/companies", { params });
   return res.data as { data: PaginatedCompanies };
 };
+
+export type CompanyFiltersData = {
+  industries: { label: string; count: number }[];
+  locations: { label: string; value: string; count: number }[];
+};
+
+export const getCompanyFiltersApi = async () => {
+  const res = await api.get("/companies/filters");
+  return res.data as { data: CompanyFiltersData };
+};
+
+
+export type SalaryFilters = {
+  q?: string;
+  location?: string;
+  category?: string | string[];
+  level?: string | string[];
+};
+
+export type SalaryReportItem = {
+  id: number;
+  title: string;
+  location: string;
+  level: string;
+  category: string;
+  medianSalary: number;
+  minSalary: number;
+  maxSalary: number;
+  reportCount: number;
+  currency: string;
+};
+
+export const getSalaryReportsApi = async (filters: SalaryFilters = {}) => {
+  const params: Record<string, unknown> = {};
+  if (filters.q) params.q = filters.q;
+  if (filters.location) params.location = filters.location;
+  
+  if (filters.category) {
+    params.category = Array.isArray(filters.category) ? filters.category.join(',') : filters.category;
+  }
+  if (filters.level) {
+    params.level = Array.isArray(filters.level) ? filters.level.join(',') : filters.level;
+  }
+
+  const res = await api.get("/salaries", { params });
+  return res.data as { data: SalaryReportItem[] };
+};
+
+export const postSalaryReportApi = async (data: {
+  title: string;
+  location: string;
+  level: string;
+  category: string;
+  salary: number;
+}) => {
+  const res = await api.post("/salaries", data);
+  return res.data as { data: SalaryReportItem };
+};
+
+export type TopPayingCompany = {
+  name: string;
+  initial: string;
+  count: number;
+  maxSalary: string;
+};
+
+export const getTopPayingCompaniesApi = async () => {
+  const res = await api.get("/salaries/top-companies");
+  return res.data as { data: TopPayingCompany[] };
+};
+

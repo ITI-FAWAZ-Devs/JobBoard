@@ -195,10 +195,42 @@ class EmployerPaymentController extends Controller
 
         $payment = Payment::query()
             ->where('application_id', $application->id)
-            ->where('status', 'paid')
+            ->latest()
             ->first();
 
-        $isPaid = $payment !== null || $application->status === 'paid';
+        $isPaid = false;
+
+        if ($payment) {
+            if ($payment->status === 'paid') {
+                $isPaid = true;
+            } elseif ($payment->stripe_session_id) {
+                try {
+                    $stripeSecret = config('services.stripe.secret');
+                    if ($stripeSecret) {
+                        $stripe = new StripeClient($stripeSecret);
+                        $session = $stripe->checkout->sessions->retrieve($payment->stripe_session_id);
+                        if ($session->payment_status === 'paid' || $session->status === 'complete') {
+                            DB::transaction(function () use ($payment, $application) {
+                                $payment->update([
+                                    'status' => 'paid',
+                                    'paid_at' => now(),
+                                ]);
+                                $application->update([
+                                    'status' => 'paid',
+                                ]);
+                            });
+                            $isPaid = true;
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // Fallback to local DB check
+                }
+            }
+        }
+
+        if (!$isPaid && $application->status === 'paid') {
+            $isPaid = true;
+        }
 
         return response()->json([
             'status' => 'success',

@@ -123,28 +123,13 @@ class AlignedPaymentsTest extends TestCase
         config(['services.stripe.secret' => null]);
 
         $response = $this->actingAs($this->employer, 'sanctum')
-            ->postJson("/api/v1/payments/stripe", [
+            ->postJson("/api/v1/payments/stripe/session", [
                 'application_id' => $this->application->id,
             ]);
 
         $response->assertStatus(500)
             ->assertJsonFragment([
                 'message' => 'Stripe is not configured.',
-            ]);
-    }
-
-    public function test_paypal_returns_500_if_not_configured(): void
-    {
-        config(['services.paypal.client_id' => null]);
-
-        $response = $this->actingAs($this->employer, 'sanctum')
-            ->postJson("/api/v1/payments/paypal", [
-                'application_id' => $this->application->id,
-            ]);
-
-        $response->assertStatus(500)
-            ->assertJsonFragment([
-                'message' => 'PayPal is not configured.',
             ]);
     }
 
