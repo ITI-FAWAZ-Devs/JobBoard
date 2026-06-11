@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Bell, LogOut, Settings } from 'lucide-vue-next';
-import { RouterLink, useRouter } from 'vue-router';
+import { RouterLink, useRouter, useRoute } from 'vue-router';
 import { Button } from '../ui/button';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useProfile } from '@/Hooks/useProfile';
@@ -26,6 +26,7 @@ type Profile = {
 const isLoggedIn = ref(Boolean(localStorage.getItem('token')));
 const queryClient = useQueryClient();
 const router = useRouter();
+const route = useRoute();
 
 const { data: profile } = useProfile(isLoggedIn.value);
 
@@ -33,8 +34,8 @@ const user = computed<Profile>(() => (profile.value ?? {}) as Profile);
 const avatarUrl = computed(() => user.value.avatar_url || '');
 const avatarInitial = computed(() => user.value.name?.charAt(0).toUpperCase());
 const roleBasePath = computed(() => {
-  if (user.value.role === 'admin') return '/admin/dashboard';
-  if (user.value.role === 'employer') return '/employer/dashboard';
+  if (user.value.role === 'admin') return '/admin';
+  if (user.value.role === 'employer') return '/employer';
 
   return '/candidate';
 });
@@ -67,18 +68,36 @@ const handleLogout = async () => {
 
         <nav class="hidden items-center gap-md md:flex">
           <RouterLink
-            class="cursor-pointer border-b-2 border-primary pb-1 text-primary transition-colors duration-200 hover:text-primary"
-            to="/jobs">
+            to="/jobs"
+            :class="[
+              'cursor-pointer font-label-md text-label-md transition-colors duration-200 hover:text-primary pb-1 border-b-2',
+              route.path.startsWith('/jobs')
+                ? 'border-primary text-primary'
+                : 'border-transparent text-on-surface-variant'
+            ]"
+          >
             Find Jobs
           </RouterLink>
           <RouterLink
-            class="cursor-pointer font-label-md text-label-md text-on-surface-variant transition-colors duration-200 hover:text-primary"
-            to="/companies">
+            to="/companies"
+            :class="[
+              'cursor-pointer font-label-md text-label-md transition-colors duration-200 hover:text-primary pb-1 border-b-2',
+              route.path.startsWith('/companies')
+                ? 'border-primary text-primary'
+                : 'border-transparent text-on-surface-variant'
+            ]"
+          >
             Companies
           </RouterLink>
           <RouterLink
-            class="cursor-pointer font-label-md text-label-md text-on-surface-variant transition-colors duration-200 hover:text-primary"
-            to="/salaries">
+            to="/salaries"
+            :class="[
+              'cursor-pointer font-label-md text-label-md transition-colors duration-200 hover:text-primary pb-1 border-b-2',
+              route.path.startsWith('/salaries')
+                ? 'border-primary text-primary'
+                : 'border-transparent text-on-surface-variant'
+            ]"
+          >
             Salaries
           </RouterLink>
         </nav>

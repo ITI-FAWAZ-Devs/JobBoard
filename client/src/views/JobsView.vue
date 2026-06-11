@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
-import { RouterLink, useRouter } from "vue-router";
+import { RouterLink, useRouter, useRoute } from "vue-router";
 import {
   Briefcase,
   CheckCircle2,
@@ -27,6 +27,7 @@ import {
 } from "@/api/jobs";
 import { toast } from "vue-sonner";
 
+const route = useRoute();
 const searchVal = ref("");
 const searchQuery = ref("");
 const selectedCategory = ref<number | null>(null);
@@ -36,6 +37,7 @@ const salaryMin = ref<number | undefined>();
 const salaryMax = ref<number | undefined>();
 const page = ref(1);
 const sortBy = ref("Relevance");
+
 
 const workTypes = [
   { label: "Remote", value: "remote" },
@@ -65,7 +67,36 @@ const { data: categoriesData } = useQuery({
 
 const categories = computed(() => categoriesData.value?.data ?? []);
 
+watch(
+  [() => route.query, categories],
+  ([newQuery, cats]) => {
+    searchVal.value = (newQuery.q as string) || "";
+    searchQuery.value = (newQuery.q as string) || "";
+    selectedWorkType.value = (newQuery.work_type as string) || "";
+    selectedLocation.value = (newQuery.location as string) || "";
+    salaryMin.value = newQuery.salary_min ? Number(newQuery.salary_min) : undefined;
+    salaryMax.value = newQuery.salary_max ? Number(newQuery.salary_max) : undefined;
+    page.value = newQuery.page ? Number(newQuery.page) : 1;
+
+    // Resolve category_id from category_id or category slug
+    if (newQuery.category_id) {
+      selectedCategory.value = Number(newQuery.category_id);
+    } else if (newQuery.category && cats.length) {
+      const slug = String(newQuery.category).toLowerCase();
+      const found = cats.find((c: any) => {
+        const cSlug = c.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        return cSlug === slug || c.name.toLowerCase() === slug || (slug === 'software-development' && c.name.includes('Software'));
+      });
+      selectedCategory.value = found ? found.id : null;
+    } else {
+      selectedCategory.value = null;
+    }
+  },
+  { immediate: true }
+);
+
 const { data, isPending, isError } = useQuery({
+
   queryKey: ["jobs", filters],
   queryFn: () => getJobsApi(filters.value),
 });
@@ -299,7 +330,7 @@ watch([searchQuery, selectedCategory, selectedWorkType, selectedLocation, salary
           </div>
           <button 
             @click="triggerSearch"
-            class="bg-primary-container text-on-primary-container font-label-md text-label-md px-xl py-sm rounded-lg hover:opacity-90 transition-opacity w-full md:w-auto flex-shrink-0 cursor-pointer"
+            class="bg-primary-container text-on-primary-container font-label-md text-label-md px-xl py-3 rounded-lg hover:opacity-90 transition-opacity w-full md:w-auto flex-shrink-0 cursor-pointer"
           >
             Search Jobs
           </button>

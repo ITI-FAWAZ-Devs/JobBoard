@@ -40,6 +40,7 @@ const navItemsBySection = {
   ],
   employer: [
     { label: 'Dashboard', icon: BarChart3, to: '/employer/dashboard' },
+    { label: 'Browse Jobs', icon: BriefcaseBusiness, to: '/jobs' },
     { label: 'Post Job', icon: BriefcaseBusiness, to: '/employer/jobs/create' },
     { label: 'Applications', icon: ClipboardCheck, to: '/employer/applications' },
     { label: 'Analytics', icon: BarChart3, to: '/employer/analytics' },

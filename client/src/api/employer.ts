@@ -63,9 +63,19 @@ export type AnalyticsData = {
   }[];
 };
 
+export type PaginatedEmployerJobs = {
+  data: JobListing[];
+  meta?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+};
+
 export const getEmployerJobsApi = async (page = 1) => {
   const res = await api.get("/employer/jobs", { params: { page } });
-  return res.data as { status: string; data: { data: JobListing[] } };
+  return res.data as PaginatedEmployerJobs;
 };
 
 export const getCandidatesApi = async (page = 1) => {

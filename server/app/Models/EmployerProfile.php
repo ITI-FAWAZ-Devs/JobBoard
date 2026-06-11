@@ -45,4 +45,10 @@ class EmployerProfile extends Model
     {
         return $this->cover_photo ? asset('storage/'.$this->cover_photo) : null;
     }
+
+    public function jobListings(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(JobListing::class);
+    }
 }
+

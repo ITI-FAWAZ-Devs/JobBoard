@@ -36,7 +36,13 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/jobs/statistics', [JobController::class, 'statistics']);
     Route::get('/jobs/{jobListing}', [JobController::class, 'show']);
     Route::get('/jobs/{jobListing}/comments', [CommentController::class, 'index']);
+    Route::get('/companies/filters', [CompanyController::class, 'filters']);
     Route::get('/companies', [CompanyController::class, 'index']);
+
+    Route::get('/salaries/top-companies', [\App\Http\Controllers\Api\SalaryReportController::class, 'topCompanies']);
+    Route::get('/salaries', [\App\Http\Controllers\Api\SalaryReportController::class, 'index']);
+    Route::post('/salaries', [\App\Http\Controllers\Api\SalaryReportController::class, 'store']);
+
 
     Route::get('/categories', function () {
         return response()->json(['data' => Category::orderBy('name')->get(['id', 'name'])]);
