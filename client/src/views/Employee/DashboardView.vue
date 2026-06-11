@@ -1,97 +1,68 @@
 <script setup lang="ts">
-import {
-  BarChart3,
-  Bell,
-  BriefcaseBusiness,
-  Eye,
-  FileText,
-  Filter,
-  Mail,
-  Menu,
-  MoreHorizontal,
-  Plus,
-  Search,
-  // TrendingRight,
-  TrendingUp,
-  UserCheck,
-} from 'lucide-vue-next';
-import { Button } from '@/components/ui/button';
-import { RouterLink } from 'vue-router';
+import { computed, ref } from "vue";
+import { useQuery } from "@tanstack/vue-query";
+import { Plus, Eye, FileText, UserCheck, Search, Filter, MoreHorizontal, TrendingUp } from "lucide-vue-next";
+import { Button } from "@/components/ui/button";
+import { RouterLink } from "vue-router";
+import { getEmployerAnalyticsApi, getEmployerJobsApi, type JobListing } from "@/api/employer";
 
-const stats = [
-  {
-    label: 'Total Profile Views',
-    value: '24,592',
-    icon: Eye,
-    trend: '12%',
-    trendIcon: TrendingUp,
-    muted: false,
-  },
-  {
-    label: 'Total Applications',
-    value: '1,204',
-    icon: FileText,
-    trend: '8%',
-    trendIcon: TrendingUp,
-    muted: false,
-  },
-  {
-    label: 'Interview Conversion',
-    value: '18.5%',
-    icon: UserCheck,
-    trend: '0%',
-    // trendIcon: TrendingRight,
-    muted: true,
-  },
-];
+const page = ref(1);
 
-const jobs = [
-  {
-    title: 'Senior Frontend Engineer',
-    meta: 'San Francisco, CA • Full-time',
-    status: 'Active',
-    statusClass: 'bg-surface-container text-primary',
-    dotClass: 'bg-primary',
-    date: 'Oct 24, 2023',
-    applications: '142',
-  },
-  {
-    title: 'Product Designer',
-    meta: 'Remote • Contract',
-    status: 'Pending',
-    statusClass: 'bg-surface-variant text-on-surface-variant',
-    dotClass: 'bg-on-surface-variant',
-    date: 'Oct 28, 2023',
-    applications: '-',
-  },
-  {
-    title: 'Marketing Manager',
-    meta: 'New York, NY • Full-time',
-    status: 'Rejected',
-    statusClass: 'bg-error-container text-on-error-container',
-    dotClass: 'bg-error',
-    date: 'Oct 15, 2023',
-    applications: '0',
-  },
-];
+const analyticsQuery = useQuery({
+  queryKey: ["employer", "analytics"],
+  queryFn: () => getEmployerAnalyticsApi(),
+});
 
+const jobsQuery = useQuery({
+  queryKey: ["employer", "jobs", page],
+  queryFn: () => getEmployerJobsApi(page.value),
+});
+
+const analytics = computed(() => {
+  const d = analyticsQuery.data;
+  if (!d) return null;
+  if ("data" in d && d.data && typeof d.data === "object" && "views" in d.data) return d.data as { views: number; applicants: number; conversion_rate: number };
+  return null;
+});
+
+const jobs = computed<JobListing[]>(() => {
+  const d = jobsQuery.data;
+  if (!d) return [];
+  if (Array.isArray(d)) return d as JobListing[];
+  const inner = (d as any)?.data;
+  if (Array.isArray(inner)) return inner as JobListing[];
+  const innerData = (d as any)?.data?.data;
+  if (Array.isArray(innerData)) return innerData as JobListing[];
+  return [];
+});
+
+const totalJobs = computed(() => jobs.value.length);
+
+const statCards = computed(() => [
+  { label: "Total Profile Views", value: analytics.value?.views?.toLocaleString() ?? "—", icon: Eye, trend: "—", muted: true },
+  { label: "Total Applications", value: analytics.value?.applicants?.toLocaleString() ?? "—", icon: FileText, trend: "—", muted: true },
+  { label: "Conversion Rate", value: analytics.value ? `${(analytics.value.conversion_rate * 100).toFixed(1)}%` : "—", icon: UserCheck, trend: "—", muted: true },
+]);
+
+const statusStyles: Record<string, { cls: string; dot: string }> = {
+  approved: { cls: "bg-surface-container text-primary", dot: "bg-primary" },
+  pending: { cls: "bg-surface-variant text-on-surface-variant", dot: "bg-on-surface-variant" },
+  rejected: { cls: "bg-error-container text-on-error-container", dot: "bg-error" },
+};
+
+function getStatusStyle(status: string) {
+  return statusStyles[status] ?? { cls: "bg-surface-variant text-on-surface-variant", dot: "bg-on-surface-variant" };
+}
+
+function formatDate(dateStr?: string | null) {
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+}
 </script>
 
 <template>
   <div class="min-h-screen bg-background text-on-background">
     <main class="flex min-h-screen flex-1 flex-col">
-      <header class="sticky top-0 z-10 flex h-18 items-center justify-between border-b border-outline-variant bg-surface px-md md:hidden">
-        <div class="flex items-center gap-sm">
-          <Button variant="ghost" size="icon" class="cursor-pointer text-on-surface-variant">
-            <Menu class="h-5 w-5" aria-hidden="true" />
-          </Button>
-          <span class="font-headline-sm text-headline-sm font-bold text-primary">WorkHive</span>
-        </div>
-        <Button variant="ghost" size="icon" class="cursor-pointer text-on-surface-variant">
-          <Bell class="h-5 w-5" aria-hidden="true" />
-        </Button>
-      </header>
-
       <div class="mx-auto w-full max-w-container-max flex-1 p-md md:p-lg">
         <div class="mb-xl flex flex-col justify-between gap-sm md:flex-row md:items-center">
           <div>
@@ -100,15 +71,18 @@ const jobs = [
               Welcome back. Here's what's happening with your job postings today.
             </p>
           </div>
-          <Button class="flex w-full cursor-pointer items-center justify-center gap-xs rounded-lg bg-primary-container px-md py-sm font-label-md text-label-md text-on-primary transition-opacity hover:opacity-90 md:w-auto">
+          <RouterLink
+            to="/employer/jobs/create"
+            class="flex w-full cursor-pointer items-center justify-center gap-xs rounded-lg bg-primary-container px-md py-sm font-label-md text-label-md text-on-primary md:w-auto"
+          >
             <Plus class="h-5 w-5" aria-hidden="true" />
             Post a Job
-          </Button>
+          </RouterLink>
         </div>
 
         <section class="mb-xl grid grid-cols-1 gap-md md:grid-cols-3">
           <article
-            v-for="stat in stats"
+            v-for="stat in statCards"
             :key="stat.label"
             class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-md shadow-[0px_4px_12px_rgba(0,0,0,0.05)]"
           >
@@ -116,11 +90,8 @@ const jobs = [
               <div class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container text-primary">
                 <component :is="stat.icon" class="h-5 w-5" aria-hidden="true" />
               </div>
-              <span
-                class="flex items-center gap-1 rounded-full bg-surface-container-high px-2 py-1 font-label-sm text-label-sm"
-                :class="stat.muted ? 'text-on-surface-variant' : 'text-on-surface'"
-              >
-                <component :is="stat.trendIcon" class="h-3.5 w-3.5" aria-hidden="true" />
+              <span class="flex items-center gap-1 rounded-full bg-surface-container-high px-2 py-1 font-label-sm text-label-sm text-on-surface-variant">
+                <TrendingUp class="h-3.5 w-3.5" aria-hidden="true" />
                 {{ stat.trend }}
               </span>
             </div>
@@ -149,7 +120,10 @@ const jobs = [
             </div>
           </div>
 
-          <div class="overflow-x-auto">
+          <div v-if="!jobs.length" class="p-md font-body-sm text-body-sm text-on-surface-variant">
+            No job listings yet.
+          </div>
+          <div v-else class="overflow-x-auto">
             <table class="w-full border-collapse text-left">
               <thead>
                 <tr class="border-b border-outline-variant bg-surface">
@@ -161,19 +135,22 @@ const jobs = [
                 </tr>
               </thead>
               <tbody class="divide-y divide-outline-variant">
-                <tr v-for="job in jobs" :key="job.title" class="group transition-colors hover:bg-surface-container-low">
+                <tr v-for="job in jobs" :key="job.id" class="group transition-colors hover:bg-surface-container-low">
                   <td class="p-md">
                     <div class="mb-1 font-label-md text-label-md text-on-background">{{ job.title }}</div>
-                    <div class="font-body-sm text-body-sm text-on-surface-variant">{{ job.meta }}</div>
+                    <div class="font-body-sm text-body-sm text-on-surface-variant">
+                      {{ job.location || "Remote" }}
+                      <template v-if="job.work_type"> · {{ job.work_type }}</template>
+                    </div>
                   </td>
                   <td class="p-md">
-                    <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-label-sm text-label-sm" :class="job.statusClass">
-                      <span class="h-1.5 w-1.5 rounded-full" :class="job.dotClass"></span>
-                      {{ job.status }}
+                    <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-label-sm text-label-sm" :class="getStatusStyle(job.status).cls">
+                      <span class="h-1.5 w-1.5 rounded-full" :class="getStatusStyle(job.status).dot"></span>
+                      {{ job.status.charAt(0).toUpperCase() + job.status.slice(1) }}
                     </span>
                   </td>
-                  <td class="p-md font-body-sm text-body-sm text-on-surface-variant">{{ job.date }}</td>
-                  <td class="p-md text-right font-label-md text-label-md text-on-background">{{ job.applications }}</td>
+                  <td class="p-md font-body-sm text-body-sm text-on-surface-variant">{{ formatDate(job.created_at) }}</td>
+                  <td class="p-md text-right font-label-md text-label-md text-on-background">{{ job.applications_count ?? 0 }}</td>
                   <td class="p-md text-center">
                     <Button variant="ghost" size="icon" class="cursor-pointer rounded-md text-on-surface-variant transition-colors hover:bg-surface-variant hover:text-primary">
                       <MoreHorizontal class="h-5 w-5" aria-hidden="true" />
@@ -185,12 +162,12 @@ const jobs = [
           </div>
 
           <div class="flex items-center justify-between border-t border-outline-variant p-md font-body-sm text-body-sm text-on-surface-variant">
-            <span>Showing 1 to 3 of 12 listings</span>
+            <span>Showing {{ jobs.length }} listing{{ jobs.length !== 1 ? 's' : '' }}</span>
             <div class="flex gap-2">
-              <Button variant="outline" class="cursor-pointer rounded-md border-outline-variant px-3 py-1 hover:bg-surface-variant" disabled>
+              <Button variant="outline" class="cursor-pointer rounded-md border-outline-variant px-3 py-1 hover:bg-surface-variant" :disabled="page <= 1" @click="page--">
                 Prev
               </Button>
-              <Button variant="outline" class="cursor-pointer rounded-md border-outline-variant px-3 py-1 hover:bg-surface-variant">
+              <Button variant="outline" class="cursor-pointer rounded-md border-outline-variant px-3 py-1 hover:bg-surface-variant" @click="page++">
                 Next
               </Button>
             </div>

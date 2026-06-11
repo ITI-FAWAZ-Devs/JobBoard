@@ -22,6 +22,7 @@ class JobListingResource extends JsonResource
             'deadline' => $this->deadline?->format('Y-m-d'),
             'status' => $this->status,
             'views_count' => $this->views_count,
+            'applications_count' => $this->when((bool) $this->applications_count, (int) $this->applications_count),
             'rejection_reason' => $this->when($this->status === 'rejected', $this->rejection_reason),
             'approved_at' => $this->approved_at?->format('Y-m-d H:i:s'),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),

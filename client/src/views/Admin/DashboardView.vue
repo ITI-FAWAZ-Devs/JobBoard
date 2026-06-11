@@ -1,326 +1,157 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
-import { Clock3, Flag, ShieldAlert, Users2 } from "lucide-vue-next";
+import { computed } from "vue";
+import { useQuery } from "@tanstack/vue-query";
+import { Clock, Flag, Users } from "lucide-vue-next";
 import { RouterLink } from "vue-router";
 import { Button } from "@/components/ui/button";
 import {
-  approveJobApi,
-  getPendingJobsApi,
-  rejectJobApi,
-  type JobListing,
+  getAdminDashboardApi,
+  type AdminDashboard,
 } from "@/api/admin";
 
-const queryClient = useQueryClient();
-const page = ref(1);
-const activeRejectId = ref<number | null>(null);
-const rejectionReason = ref<Record<number, string>>({});
-
 const { data } = useQuery({
-  queryKey: ["admin", "pending-jobs", page],
-  queryFn: () => getPendingJobsApi(page.value),
-  keepPreviousData: true,
+  queryKey: ["admin", "dashboard"],
+  queryFn: () => getAdminDashboardApi(),
 });
 
-const jobs = computed<JobListing[]>(() => data.value?.data?.data ?? []);
-const meta = computed(() => data.value?.data?.meta);
-const topJobs = computed(() => jobs.value.slice(0, 2));
-
-const approveMutation = useMutation({
-  mutationFn: (jobId: number) => approveJobApi(jobId),
-  onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin", "pending-jobs"] }),
-});
-
-const rejectMutation = useMutation({
-  mutationFn: ({ jobId, reason }: { jobId: number; reason: string }) =>
-    rejectJobApi(jobId, reason),
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ["admin", "pending-jobs"] });
-    if (activeRejectId.value) {
-      rejectionReason.value[activeRejectId.value] = "";
-    }
-    activeRejectId.value = null;
-  },
-});
-
-const totalPending = computed(() => meta.value?.total ?? jobs.value.length);
-
-const formatDate = (value?: string | null) => {
-  if (!value) return "";
-  const date = new Date(value);
-  return date.toLocaleDateString();
-};
-
-const openReject = (jobId: number) => {
-  activeRejectId.value = jobId;
-};
-
-const submitReject = (jobId: number) => {
-  const reason = rejectionReason.value[jobId]?.trim();
-  if (!reason) return;
-  rejectMutation.mutate({ jobId, reason });
-};
-
-const flaggedComments = [
-  {
-    id: 1,
-    title: "Reported by 3 users",
-    time: "2h ago",
-    body: "This company is a complete scam, don't apply here. The CEO is a known fraud.",
-  },
-  {
-    id: 2,
-    title: "Spam Filter",
-    time: "5h ago",
-    body: "Make $5000 a week working from home! Click here: http://suspicious-link.com",
-  },
-];
-
-const recentUsers = [
-  { id: 1, name: "Jane Doe", role: "Recruiter", status: "Active" },
-  { id: 2, name: "Mike Smith", role: "Candidate", status: "Suspended" },
-];
+const dashboard = computed<AdminDashboard | null>(() => data.value?.data ?? null);
 </script>
 
 <template>
-  <div>
-    <div class="mb-md flex flex-wrap items-center justify-end gap-sm">
-      <Button variant="outline" size="sm">Export Data</Button>
-      <Button size="sm">New Report</Button>
-    </div>
+  <div class="min-h-screen bg-background text-on-background">
+    <main class="mx-auto w-full max-w-container-max flex-1 p-md md:p-lg">
+      <div class="mb-xl flex flex-col justify-between gap-sm md:flex-row md:items-center">
+        <div>
+          <h1 class="font-headline-lg text-headline-lg text-on-background">Platform Overview</h1>
+          <p class="mt-1 font-body-md text-body-md text-on-surface-variant">
+            Monitor activity and manage content across WorkHive.
+          </p>
+        </div>
+        <Button variant="outline" size="sm">Export Report</Button>
+      </div>
 
-    <div class="grid gap-lg">
-      <div class="grid gap-md md:grid-cols-3">
-        <div class="rounded-xl border border-outline-variant bg-card p-md shadow-soft">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-on-surface-variant">Pending Approvals</p>
-              <p class="text-3xl font-semibold text-on-surface">{{ totalPending }}</p>
-              <p class="mt-xs text-xs text-destructive">+12% from yesterday</p>
-            </div>
-            <div class="rounded-full bg-accent p-2 text-primary">
-              <Clock3 class="h-5 w-5" aria-hidden="true" />
+      <div class="mb-xl grid grid-cols-1 gap-md md:grid-cols-4">
+        <article class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-md shadow-[0px_4px_12px_rgba(0,0,0,0.05)]">
+          <div class="mb-sm flex items-start justify-between">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container text-primary">
+              <Clock class="h-5 w-5" aria-hidden="true" />
             </div>
           </div>
-        </div>
-        <div class="rounded-xl border border-outline-variant bg-card p-md shadow-soft">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-on-surface-variant">Active Users</p>
-              <p class="text-3xl font-semibold text-on-surface">8.4k</p>
-              <p class="mt-xs text-xs text-secondary">+5% this week</p>
-            </div>
-            <div class="rounded-full bg-secondary/10 p-2 text-secondary">
-              <Users2 class="h-5 w-5" aria-hidden="true" />
+          <div>
+            <p class="mb-1 font-label-md text-label-md text-on-surface-variant">Pending Approvals</p>
+            <h3 class="font-headline-xl text-headline-xl text-on-background">{{ dashboard?.jobs.pending ?? '—' }}</h3>
+          </div>
+        </article>
+
+        <article class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-md shadow-[0px_4px_12px_rgba(0,0,0,0.05)]">
+          <div class="mb-sm flex items-start justify-between">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container text-secondary">
+              <Users class="h-5 w-5" aria-hidden="true" />
             </div>
           </div>
-        </div>
-        <div class="rounded-xl border border-outline-variant bg-card p-md shadow-soft">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-on-surface-variant">Flagged Comments</p>
-              <p class="text-3xl font-semibold text-on-surface">28</p>
-              <p class="mt-xs text-xs text-on-surface-variant">Requires review today</p>
-            </div>
-            <div class="rounded-full bg-destructive/10 p-2 text-destructive">
+          <div>
+            <p class="mb-1 font-label-md text-label-md text-on-surface-variant">Total Users</p>
+            <h3 class="font-headline-xl text-headline-xl text-on-background">{{ dashboard?.users.total ?? '—' }}</h3>
+            <p class="font-body-xs text-body-xs text-on-surface-variant">
+              {{ dashboard?.users.employers ?? '—' }} employers · {{ dashboard?.users.candidates ?? '—' }} candidates
+            </p>
+          </div>
+        </article>
+
+        <article class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-md shadow-[0px_4px_12px_rgba(0,0,0,0.05)]">
+          <div class="mb-sm flex items-start justify-between">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container text-destructive">
               <Flag class="h-5 w-5" aria-hidden="true" />
             </div>
           </div>
-        </div>
+          <div>
+            <p class="mb-1 font-label-md text-label-md text-on-surface-variant">Flagged Comments</p>
+            <h3 class="font-headline-xl text-headline-xl text-on-background">{{ dashboard?.flagged_comments_count ?? '—' }}</h3>
+          </div>
+        </article>
+
+        <article class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-md shadow-[0px_4px_12px_rgba(0,0,0,0.05)]">
+          <div class="mb-sm flex items-start justify-between">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container text-primary">
+              <Clock class="h-5 w-5" aria-hidden="true" />
+            </div>
+          </div>
+          <div>
+            <p class="mb-1 font-label-md text-label-md text-on-surface-variant">Jobs Breakdown</p>
+            <h3 class="font-headline-xl text-headline-xl text-on-background">{{ dashboard?.jobs.total ?? '—' }}</h3>
+            <p class="font-body-xs text-body-xs text-on-surface-variant">
+              {{ dashboard?.jobs.approved ?? '—' }} approved · {{ dashboard?.jobs.rejected ?? '—' }} rejected
+            </p>
+          </div>
+        </article>
       </div>
 
       <div class="grid gap-lg lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div class="grid gap-lg">
-          <section class="rounded-2xl border border-outline-variant bg-card shadow-soft">
-            <header class="flex items-center justify-between border-b border-outline-variant px-lg py-md">
-              <div>
-                <h2 class="text-lg font-semibold text-on-surface">Pending Job Approvals</h2>
-                <p class="text-sm text-on-surface-variant">Review the latest job listings.</p>
-              </div>
-              <RouterLink
-                class="text-sm font-medium text-primary hover:underline"
-                to="/admin/pending-jobs"
-              >
-                View All
-              </RouterLink>
-            </header>
+        <section class="overflow-hidden rounded-xl bg-surface-container-lowest shadow-[0px_4px_12px_rgba(0,0,0,0.05)]">
+          <div class="flex items-center justify-between border-b border-outline-variant p-md">
+            <h2 class="font-headline-md text-headline-md text-on-background">Recent Pending Jobs</h2>
+            <RouterLink
+              class="font-label-md text-label-md text-primary hover:underline"
+              to="/admin/jobs"
+            >
+              View All
+            </RouterLink>
+          </div>
 
-            <div v-if="!topJobs.length" class="px-lg py-lg text-sm text-on-surface-variant">
-              No pending jobs right now.
+          <div v-if="!dashboard?.recent_pending_jobs?.length" class="p-md font-body-sm text-body-sm text-on-surface-variant">
+            No pending jobs right now.
+          </div>
+          <div v-else class="divide-y divide-outline-variant">
+            <div v-for="job in dashboard.recent_pending_jobs" :key="job.id" class="p-md">
+              <div class="flex flex-wrap items-center justify-between gap-md">
+                <div>
+                  <p class="font-label-md text-label-md text-on-background">{{ job.title }}</p>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">
+                    {{ job.company_name || 'Unknown company' }}
+                    <span v-if="job.location"> - {{ job.location }}</span>
+                  </p>
+                </div>
+                <span class="font-body-xs text-body-xs text-on-surface-variant">{{ job.created_at }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="grid gap-lg">
+          <section class="overflow-hidden rounded-xl bg-surface-container-lowest shadow-[0px_4px_12px_rgba(0,0,0,0.05)]">
+            <div class="flex items-center gap-xs border-b border-outline-variant p-md">
+              <Flag class="h-4 w-4 text-destructive" aria-hidden="true" />
+              <h2 class="font-headline-md text-headline-md text-on-background">Flagged Comments</h2>
+            </div>
+
+            <div v-if="!dashboard?.recent_flagged_comments?.length" class="p-md font-body-sm text-body-sm text-on-surface-variant">
+              No flagged comments.
             </div>
             <div v-else class="divide-y divide-outline-variant">
-              <div v-for="job in topJobs" :key="job.id" class="px-lg py-md">
-                <div class="flex flex-wrap items-center justify-between gap-md">
-                  <div class="min-w-[240px]">
-                    <p class="text-base font-semibold text-on-surface">{{ job.title }}</p>
-                    <p class="text-sm text-on-surface-variant">
-                      {{ job.employer_profile?.company_name || 'Unknown company' }}
-                      <span v-if="job.location"> - {{ job.location }}</span>
-                    </p>
-                    <p class="text-xs text-on-surface-variant">
-                      Submitted {{ formatDate(job.created_at) }}
-                    </p>
-                  </div>
-
-                  <div class="flex flex-wrap items-center gap-sm">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      class="border-destructive text-destructive hover:bg-destructive/10"
-                      :disabled="rejectMutation.isPending"
-                      @click="openReject(job.id)"
-                    >
-                      Reject
-                    </Button>
-                    <Button
-                      size="sm"
-                      :disabled="approveMutation.isPending"
-                      @click="approveMutation.mutate(job.id)"
-                    >
-                      Approve
-                    </Button>
-                  </div>
+              <div v-for="comment in dashboard.recent_flagged_comments" :key="comment.id" class="p-md">
+                <div class="flex items-center justify-between font-body-xs text-body-xs text-on-surface-variant">
+                  <span>{{ comment.user_name }}</span>
+                  <span>{{ comment.created_at }}</span>
                 </div>
-
-                <div v-if="activeRejectId === job.id" class="mt-md rounded-lg border border-outline-variant bg-surface-container-lowest p-md">
-                  <label class="mb-xs block text-xs font-medium text-on-surface-variant">
-                    Rejection reason
-                  </label>
-                  <div class="flex flex-wrap items-center gap-sm">
-                    <input
-                      v-model="rejectionReason[job.id]"
-                      class="h-9 flex-1 rounded-md border border-outline-variant bg-transparent px-sm text-sm focus:border-primary focus:outline-none"
-                      placeholder="Provide a short reason"
-                      type="text"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      type="button"
-                      @click="activeRejectId = null"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      size="sm"
-                      type="button"
-                      :disabled="rejectMutation.isPending || !rejectionReason[job.id]"
-                      @click="submitReject(job.id)"
-                    >
-                      Confirm
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="rounded-2xl border border-outline-variant bg-card shadow-soft">
-            <header class="flex items-center justify-between border-b border-outline-variant px-lg py-md">
-              <div>
-                <h2 class="text-lg font-semibold text-on-surface">Recent User Activity</h2>
-                <p class="text-sm text-on-surface-variant">Latest account status changes.</p>
-              </div>
-            </header>
-            <div class="px-lg py-md">
-              <table class="min-w-full text-sm">
-                <thead class="text-left text-xs uppercase tracking-wide text-on-surface-variant">
-                  <tr>
-                    <th class="py-sm font-medium">User</th>
-                    <th class="py-sm font-medium">Role</th>
-                    <th class="py-sm font-medium">Status</th>
-                    <th class="py-sm text-right font-medium">Action</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-outline-variant">
-                  <tr v-for="user in recentUsers" :key="user.id">
-                    <td class="py-md font-semibold text-on-surface">{{ user.name }}</td>
-                    <td class="py-md text-on-surface-variant">{{ user.role }}</td>
-                    <td class="py-md">
-                      <span
-                        class="rounded-full px-sm py-[2px] text-xs font-medium"
-                        :class="user.status === 'Active'
-                          ? 'bg-secondary/10 text-secondary'
-                          : 'bg-warning/10 text-warning'"
-                      >
-                        {{ user.status }}
-                      </span>
-                    </td>
-                    <td class="py-md text-right text-on-surface-variant">...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-        </div>
-
-        <div class="grid gap-lg">
-          <section class="rounded-2xl border border-outline-variant bg-card shadow-soft">
-            <header class="flex items-center justify-between border-b border-outline-variant px-lg py-md">
-              <div class="flex items-center gap-xs">
-                <ShieldAlert class="h-4 w-4 text-destructive" aria-hidden="true" />
-                <h2 class="text-lg font-semibold text-on-surface">Flagged Comments</h2>
-              </div>
-            </header>
-
-            <div class="divide-y divide-outline-variant">
-              <div v-for="comment in flaggedComments" :key="comment.id" class="px-lg py-md">
-                <div class="flex items-center justify-between text-xs text-on-surface-variant">
-                  <span>{{ comment.title }}</span>
-                  <span>{{ comment.time }}</span>
-                </div>
-                <p class="mt-sm text-sm text-on-surface">
-                  "{{ comment.body }}"
+                <p class="mt-sm font-body-sm text-body-sm text-on-background">
+                  "{{ comment.content }}"
+                </p>
+                <p class="mt-xs font-body-xs text-body-xs text-on-surface-variant">
+                  on {{ comment.job_title }}
                 </p>
                 <div class="mt-sm flex items-center gap-sm">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    class="border-destructive text-destructive hover:bg-destructive/10"
+                  <RouterLink
+                    to="/admin/comments"
+                    class="font-label-sm text-label-sm text-primary hover:underline"
                   >
-                    Delete
-                  </Button>
-                  <Button variant="outline" size="sm">Ignore</Button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="rounded-2xl border border-outline-variant bg-card p-lg shadow-soft">
-            <h2 class="text-lg font-semibold text-on-surface">Platform Health</h2>
-
-            <div class="mt-md space-y-md">
-              <div>
-                <div class="mb-xs flex items-center justify-between text-xs text-on-surface-variant">
-                  <span>Server Uptime</span>
-                  <span class="text-secondary">99.9%</span>
-                </div>
-                <div class="h-2 w-full rounded-full bg-surface-container-low">
-                  <div class="h-2 w-[92%] rounded-full bg-secondary"></div>
-                </div>
-              </div>
-              <div>
-                <div class="mb-xs flex items-center justify-between text-xs text-on-surface-variant">
-                  <span>API Response Time</span>
-                  <span class="text-primary">124ms</span>
-                </div>
-                <div class="h-2 w-full rounded-full bg-surface-container-low">
-                  <div class="h-2 w-[74%] rounded-full bg-primary"></div>
-                </div>
-              </div>
-              <div>
-                <div class="mb-xs flex items-center justify-between text-xs text-on-surface-variant">
-                  <span>Database Load</span>
-                  <span class="text-destructive">85%</span>
-                </div>
-                <div class="h-2 w-full rounded-full bg-surface-container-low">
-                  <div class="h-2 w-[85%] rounded-full bg-destructive"></div>
+                    Manage Comments
+                  </RouterLink>
                 </div>
               </div>
             </div>
           </section>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 </template>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Notifications\UserStatusChanged;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -55,6 +56,8 @@ class AdminUserController extends Controller
             'banned_at' => null,
         ]);
 
+        $user->notify(new UserStatusChanged($user, 'suspended'));
+
         return response()->json([
             'status' => 'success',
             'message' => 'User suspended successfully.',
@@ -79,6 +82,8 @@ class AdminUserController extends Controller
             'banned_at' => now(),
             'suspended_at' => null,
         ]);
+
+        $user->notify(new UserStatusChanged($user, 'banned'));
 
         return response()->json([
             'status' => 'success',
@@ -105,11 +110,18 @@ class AdminUserController extends Controller
             'suspended_at' => null,
         ]);
 
+        $user->notify(new UserStatusChanged($user, 'restored'));
+
         return response()->json([
             'status' => 'success',
             'message' => 'User activated successfully.',
             'data' => $this->buildUserPayload($user),
         ]);
+    }
+
+    public function restore(User $user): JsonResponse
+    {
+        return $this->activate($user);
     }
 
     private function buildUserPayload(User $user): array
