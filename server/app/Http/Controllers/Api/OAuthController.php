@@ -86,28 +86,31 @@ class OAuthController extends Controller
             ->where('provider_id', $oauthUser->getId())
             ->first();
 
+        $isNewUser = false;
+
         if (! $user) {
             $user = User::where('email', $oauthUser->getEmail())->first();
 
             if ($user) {
                 if (! $user->provider) {
                     $user->forceFill([
-                        'provider' => $provider,
+                        'provider'    => $provider,
                         'provider_id' => $oauthUser->getId(),
                     ])->save();
                 }
             } else {
+                $isNewUser = true;
                 $user = User::create([
-                    'name' => $oauthUser->getName() ?: ($oauthUser->getNickname() ?: 'User'),
-                    'email' => $oauthUser->getEmail(),
+                    'name'     => $oauthUser->getName() ?: ($oauthUser->getNickname() ?: 'User'),
+                    'email'    => $oauthUser->getEmail(),
                     'password' => Str::random(40),
-                    'role' => $role,
+                    'role'     => $role,
                 ]);
 
                 $user->forceFill([
-                    'provider' => $provider,
-                    'provider_id' => $oauthUser->getId(),
-                    'email_verified_at' => now(),
+                    'provider'           => $provider,
+                    'provider_id'        => $oauthUser->getId(),
+                    'email_verified_at'  => now(),
                 ])->save();
 
                 if ($user->isEmployer()) {
@@ -115,13 +118,23 @@ class OAuthController extends Controller
                 }
 
                 if ($user->isCandidate()) {
-                    $user->candidateProfile()->create();
+                    $user->candidateProfile()->create(
+                        $this->extractProfileData($provider, $oauthUser)
+                    );
                 }
             }
         }
 
         if (! $user->is_active) {
             return $this->redirectWithError('Your account has been suspended.');
+        }
+
+        // Sync avatar from provider if user has none
+        $this->syncAvatar($user, $oauthUser->getAvatar());
+
+        // On subsequent logins, also fill any still-empty profile fields
+        if (! $isNewUser && $user->isCandidate()) {
+            $this->fillMissingProfileData($user, $provider, $oauthUser);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -153,58 +166,81 @@ class OAuthController extends Controller
             return $this->redirectConnectError('Failed to authenticate with '.ucfirst($provider).'. Please try again.');
         }
 
-        // Store profile URL - LinkedIn OpenID provides it in user attributes
-        $linkedinUrl = $oauthUser->offsetGet('vanityName')
-            ? 'https://www.linkedin.com/in/'.$oauthUser->offsetGet('vanityName')
-            : ($oauthUser->profileUrl ?? null);
-
-        $candidateProfile = $user->candidateProfile;
-        if ($candidateProfile) {
-            $updates = [];
-
-            // Populate linkedin_url if not already set
-            if (! $candidateProfile->linkedin_url && $linkedinUrl) {
-                $updates['linkedin_url'] = $linkedinUrl;
-            }
-
-            // Populate phone if not already set and LinkedIn provided one
-            if (! $candidateProfile->phone && $oauthUser->offsetGet('phoneNumbers')) {
-                $phone = collect($oauthUser->offsetGet('phoneNumbers'))->first();
-                if ($phone) {
-                    $updates['phone'] = is_array($phone) ? ($phone['number'] ?? null) : $phone;
-                }
-            }
-
-            // Populate location if not already set
-            if (! $candidateProfile->location) {
-                $location = $oauthUser->offsetGet('location');
-                if ($location) {
-                    $updates['location'] = is_array($location)
-                        ? ($location['name'] ?? null)
-                        : $location;
-                }
-            }
-
-            if (! empty($updates)) {
-                $candidateProfile->update($updates);
-            }
-        }
-
-        // Update user name/avatar from LinkedIn if missing
-        if (! $user->avatar && $oauthUser->getAvatar()) {
-            $avatarContents = @file_get_contents($oauthUser->getAvatar());
-            if ($avatarContents) {
-                $ext = 'jpg';
-                $path = 'avatars/'.Str::uuid().'.'.$ext;
-                \Illuminate\Support\Facades\Storage::disk('public')->put($path, $avatarContents);
-                $user->forceFill(['avatar' => $path])->save();
-            }
-        }
+        $this->fillMissingProfileData($user, $provider, $oauthUser);
+        $this->syncAvatar($user, $oauthUser->getAvatar());
 
         return redirect()->away($this->frontendUrl('/oauth/callback?'.http_build_query([
-            'mode' => 'connect',
+            'mode'     => 'connect',
             'provider' => $provider,
         ])));
+    }
+
+    /**
+     * Build candidate profile fields from the OAuth user data.
+     * LinkedIn OpenID returns: sub, name, given_name, family_name, picture, email, locale.
+     * It does NOT return a vanity URL, so we store the public profile search URL.
+     */
+    private function extractProfileData(string $provider, \Laravel\Socialite\Contracts\User $oauthUser): array
+    {
+        $data = [];
+
+        if ($provider === 'linkedin') {
+            $data['linkedin_url'] = 'https://www.linkedin.com/search/results/people/?keywords='
+                .urlencode($oauthUser->getName() ?? '');
+
+            $locale = $oauthUser->offsetExists('locale') ? $oauthUser->offsetGet('locale') : null;
+            if (is_array($locale) && ! empty($locale['country'])) {
+                $data['location'] = $locale['country'];
+            }
+        }
+
+        return array_filter($data);
+    }
+
+    /**
+     * Fill any empty profile fields for an existing candidate from OAuth data.
+     */
+    private function fillMissingProfileData(User $user, string $provider, \Laravel\Socialite\Contracts\User $oauthUser): void
+    {
+        $profile = $user->candidateProfile;
+        if (! $profile) {
+            return;
+        }
+
+        $updates = [];
+
+        if ($provider === 'linkedin' && ! $profile->linkedin_url) {
+            $updates['linkedin_url'] = 'https://www.linkedin.com/search/results/people/?keywords='
+                .urlencode($oauthUser->getName() ?? '');
+        }
+
+        if (! $profile->location) {
+            $locale = $oauthUser->offsetExists('locale') ? $oauthUser->offsetGet('locale') : null;
+            if (is_array($locale) && ! empty($locale['country'])) {
+                $updates['location'] = $locale['country'];
+            }
+        }
+
+        if (! empty($updates)) {
+            $profile->update($updates);
+        }
+    }
+
+    /**
+     * Download and store the provider avatar if the user has none.
+     */
+    private function syncAvatar(User $user, ?string $avatarUrl): void
+    {
+        if ($user->avatar || ! $avatarUrl) {
+            return;
+        }
+
+        $contents = @file_get_contents($avatarUrl);
+        if ($contents) {
+            $path = 'avatars/'.Str::uuid().'.jpg';
+            \Illuminate\Support\Facades\Storage::disk('public')->put($path, $contents);
+            $user->forceFill(['avatar' => $path])->save();
+        }
     }
 
     private function decodeState(?string $state): array
