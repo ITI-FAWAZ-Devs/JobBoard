@@ -15,7 +15,7 @@
     "@stripe/stripe-js": "^9.7.0",
     "@tanstack/vue-query": "^5.100.13",
     "@vueuse/core": "^14.3.0",
-    "apexcharts": "^5.13.0",
+    "apexcharts": "^5.15.0",
     "axios": "^1.16.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

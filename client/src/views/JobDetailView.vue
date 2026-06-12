@@ -14,6 +14,7 @@ import {
   Globe,
   MapPin,
   Send,
+  Zap,
   MessageSquare,
   Flag,
   Upload,
@@ -30,6 +31,7 @@ import {
   postCommentApi,
   reportCommentApi,
   applyToJobApi,
+  quickApplyApi,
   getSavedJobsApi,
   saveJobApi,
   unsaveJobApi,
@@ -70,6 +72,24 @@ const showApplyModal = ref(false);
 const coverLetter = ref("");
 const resumeFile = ref<File | null>(null);
 
+const storedProfile = computed(() => {
+  try {
+    const u = JSON.parse(localStorage.getItem("user") || "null");
+    return u?.profile ?? null;
+  } catch {
+    return null;
+  }
+});
+
+const prefillName = computed(() => {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "null")?.name ?? "";
+  } catch { return ""; }
+});
+const prefillPhone = computed(() => storedProfile.value?.phone ?? "");
+const prefillLinkedIn = computed(() => storedProfile.value?.linkedin_url ?? "");
+const hasProfileResume = computed(() => Boolean(storedProfile.value?.resume_url));
+
 function handleFileChange(e: Event) {
   const files = (e.target as HTMLInputElement).files;
   if (files?.length) resumeFile.value = files[0] || null;
@@ -87,9 +107,31 @@ const applyMutation = useMutation({
     showApplyModal.value = false;
     coverLetter.value = "";
     resumeFile.value = null;
+    queryClient.invalidateQueries({ queryKey: ["job", jobId] });
   },
   onError: (err: any) => {
     toast.error(err?.response?.data?.message || "Failed to submit application.");
+  },
+});
+
+const quickApplyMutation = useMutation({
+  mutationFn: () => quickApplyApi(jobId),
+  onSuccess: () => {
+    toast.success("Application sent with your profile resume!");
+    queryClient.invalidateQueries({ queryKey: ["job", jobId] });
+  },
+  onError: (err: any) => {
+    const data = err?.response?.data;
+    if (data?.code === "resume_required") {
+      toast.error("Upload a resume to your profile first to use Quick Apply.", {
+        action: {
+          label: "Go to Profile",
+          onClick: () => router.push("/candidate/profile"),
+        },
+      });
+      return;
+    }
+    toast.error(data?.message || "Failed to submit application.");
   },
 });
 
@@ -231,6 +273,16 @@ function formatDate(dateStr?: string | null) {
               >
                 <Bookmark class="h-4 w-4 text-primary" :class="{ 'fill-primary': isSaved }" />
                 {{ isSaved ? 'Saved' : 'Save Job' }}
+              </Button>
+              <Button
+                v-if="!job?.has_applied"
+                variant="outline"
+                class="gap-2 rounded-xl border-primary/40 text-primary hover:bg-primary/5 cursor-pointer"
+                :disabled="quickApplyMutation.isPending.value"
+                @click="quickApplyMutation.mutate()"
+              >
+                <Zap class="h-4 w-4" />
+                {{ quickApplyMutation.isPending.value ? "Applying..." : "Quick Apply" }}
               </Button>
               <Button
                 v-if="!job?.has_applied"
@@ -394,11 +446,19 @@ function formatDate(dateStr?: string | null) {
             <!-- Apply CTA -->
             <div v-if="isCandidate && !job?.has_applied" class="rounded-2xl border border-primary/20 bg-primary/5 p-5">
               <h3 class="mb-2 text-sm font-semibold text-on-surface">Interested in this role?</h3>
-              <p class="mb-3 text-xs leading-relaxed text-on-surface-variant">Submit your application with a resume and cover letter.</p>
+              <p class="mb-3 text-xs leading-relaxed text-on-surface-variant">Quick Apply uses the resume on your profile, or submit a full application with a cover letter.</p>
               <div class="flex flex-col gap-2">
-                <Button class="w-full gap-2 rounded-lg cursor-pointer" @click="showApplyModal = true">
+                <Button
+                  class="w-full gap-2 rounded-lg cursor-pointer"
+                  :disabled="quickApplyMutation.isPending.value"
+                  @click="quickApplyMutation.mutate()"
+                >
+                  <Zap class="h-4 w-4" />
+                  {{ quickApplyMutation.isPending.value ? "Applying..." : "Quick Apply" }}
+                </Button>
+                <Button variant="outline" class="w-full gap-2 rounded-lg border-outline-variant bg-white cursor-pointer" @click="showApplyModal = true">
                   <Send class="h-4 w-4" />
-                  Apply Now
+                  Apply with Cover Letter
                 </Button>
                 <Button variant="outline" class="w-full gap-2 rounded-lg border-outline-variant bg-white cursor-pointer" @click="handleToggleSave">
                   <Bookmark class="h-4 w-4 text-primary" :class="{ 'fill-primary': isSaved }" />
@@ -448,6 +508,29 @@ function formatDate(dateStr?: string | null) {
             </div>
 
             <div class="space-y-6">
+              <!-- Profile summary pre-filled from LinkedIn/profile -->
+              <div v-if="prefillName || prefillPhone || prefillLinkedIn" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+                <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">From your profile</p>
+                <div class="grid gap-2 sm:grid-cols-2">
+                  <div v-if="prefillName" class="flex items-center gap-2 text-sm text-on-surface">
+                    <span class="font-medium text-on-surface-variant w-16 shrink-0">Name</span>
+                    <span>{{ prefillName }}</span>
+                  </div>
+                  <div v-if="prefillPhone" class="flex items-center gap-2 text-sm text-on-surface">
+                    <span class="font-medium text-on-surface-variant w-16 shrink-0">Phone</span>
+                    <span>{{ prefillPhone }}</span>
+                  </div>
+                  <div v-if="prefillLinkedIn" class="col-span-full flex items-center gap-2 text-sm">
+                    <span class="font-medium text-on-surface-variant w-16 shrink-0">LinkedIn</span>
+                    <a :href="prefillLinkedIn" target="_blank" rel="noopener" class="truncate text-primary hover:underline">{{ prefillLinkedIn }}</a>
+                  </div>
+                  <div v-if="hasProfileResume" class="col-span-full flex items-center gap-2 text-sm text-on-surface">
+                    <span class="font-medium text-on-surface-variant w-16 shrink-0">Resume</span>
+                    <span class="text-secondary">Profile resume will be used if you don't upload a new one.</span>
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label class="mb-2 block text-sm font-medium text-on-surface">Cover Letter <span class="text-on-surface-variant">(optional)</span></label>
                 <textarea
@@ -459,7 +542,7 @@ function formatDate(dateStr?: string | null) {
               </div>
 
               <div>
-                <label class="mb-2 block text-sm font-medium text-on-surface">Resume (optional)</label>
+                <label class="mb-2 block text-sm font-medium text-on-surface">Resume <span class="text-on-surface-variant">(optional{{ hasProfileResume ? ' – profile resume on file' : '' }})</span></label>
                 <div
                   class="relative rounded-xl border-2 border-dashed p-6 text-center transition-colors hover:border-primary/40"
                   :class="resumeFile ? 'border-primary bg-primary/5' : 'border-outline-variant bg-surface'"
