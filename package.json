@@ -9,6 +9,6 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "client": "cd client && npm run dev",
-    "server": "cd server && php artisan serve"
+    "server": "cd server && php -d upload_max_filesize=10M -d post_max_size=15M artisan serve"
   }
 }
