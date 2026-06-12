@@ -52,4 +52,16 @@ return [
         'currency' => env('PAYMENTS_CURRENCY', 'usd'),
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', 'http://127.0.0.1:8000/api/v1/auth/oauth/google/callback'),
+    ],
+
+    'linkedin-openid' => [
+        'client_id' => env('LINKEDIN_CLIENT_ID'),
+        'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
+        'redirect' => env('LINKEDIN_REDIRECT_URI', 'http://127.0.0.1:8000/api/v1/auth/oauth/linkedin/callback'),
+    ],
+
 ];

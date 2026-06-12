@@ -315,3 +315,8 @@ export const getTopPayingCompaniesApi = async () => {
   return res.data as { data: TopPayingCompany[] };
 };
 
+
+export const quickApplyApi = async (jobId: number) => {
+  const res = await api.post(`/jobs/${jobId}/quick-apply`);
+  return res.data;
+};

@@ -20,3 +20,18 @@ export type RegisterPayload = {
 export const registerApi = (data: RegisterPayload) => {
   return api.post("/auth/register", data);
 };
+
+export type OAuthProvider = "google" | "linkedin";
+
+export const getOAuthRedirectUrl = (
+  provider: OAuthProvider,
+  role: "candidate" | "employer" = "candidate",
+) => {
+  return `${api.defaults.baseURL}/auth/oauth/${provider}/redirect?role=${role}`;
+};
+
+export const getOAuthConnectUrl = (provider: OAuthProvider) => {
+  const token = localStorage.getItem("token") ?? "";
+  const params = new URLSearchParams({ mode: "connect", connect_token: token });
+  return `${api.defaults.baseURL}/auth/oauth/${provider}/redirect?${params.toString()}`;
+};

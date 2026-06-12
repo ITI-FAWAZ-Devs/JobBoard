@@ -14,7 +14,13 @@ class Application extends Model
         'candidate_profile_id',
         'status',
         'cover_letter',
+        'resume_path',
     ];
+
+    public function getResumeUrlAttribute(): ?string
+    {
+        return $this->resume_path ? asset('storage/'.$this->resume_path) : null;
+    }
 
     public function jobListing()
     {

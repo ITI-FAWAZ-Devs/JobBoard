@@ -58,14 +58,15 @@ class ApplicationController extends Controller
             'resume' => ['nullable', 'file', 'mimes:pdf,docx,doc', 'max:5120'],
         ]);
 
-        if ($request->hasFile('resume')) {
-            $validated['resume_path'] = $request->file('resume')->store('resumes', 'public');
-        }
+        $resumePath = $request->hasFile('resume')
+            ? $request->file('resume')->store('resumes', 'public')
+            : $candidateProfile->resume;
 
         $application = Application::create([
             'job_listing_id' => $jobListing->id,
             'candidate_profile_id' => $candidateProfile->id,
             'cover_letter' => $validated['cover_letter'] ?? null,
+            'resume_path' => $resumePath,
             'status' => 'pending',
         ]);
 
@@ -74,6 +75,77 @@ class ApplicationController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Application submitted successfully.',
+            'data' => $this->formatApplication($application),
+        ], 201);
+    }
+
+    /**
+     * One-click apply using the resume already stored on the candidate profile.
+     */
+    public function quickApply(Request $request, JobListing $jobListing): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user->isCandidate()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Only candidates can apply for jobs.',
+                'data' => null,
+            ], 403);
+        }
+
+        if ($jobListing->status !== 'approved') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'This job is not currently accepting applications.',
+                'data' => null,
+            ], 422);
+        }
+
+        $candidateProfile = $user->candidateProfile;
+
+        if (! $candidateProfile) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Candidate profile not found.',
+                'data' => null,
+            ], 404);
+        }
+
+        if (! $candidateProfile->resume) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Upload a resume to your profile to use Quick Apply.',
+                'code' => 'resume_required',
+                'data' => null,
+            ], 422);
+        }
+
+        $exists = Application::where('job_listing_id', $jobListing->id)
+            ->where('candidate_profile_id', $candidateProfile->id)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You have already applied for this job.',
+                'data' => null,
+            ], 409);
+        }
+
+        $application = Application::create([
+            'job_listing_id' => $jobListing->id,
+            'candidate_profile_id' => $candidateProfile->id,
+            'cover_letter' => null,
+            'resume_path' => $candidateProfile->resume,
+            'status' => 'pending',
+        ]);
+
+        $application->load(['jobListing', 'candidateProfile.user']);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Application submitted with your profile resume.',
             'data' => $this->formatApplication($application),
         ], 201);
     }

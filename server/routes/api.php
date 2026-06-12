@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\ExperienceController;
 use App\Http\Controllers\Api\GalleryPhotoController;
 use App\Http\Controllers\Api\JobController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\OAuthController;
 use App\Http\Controllers\Api\OfficeController;
 use App\Http\Controllers\Api\SavedJobController;
 use App\Http\Controllers\Api\PaymentWebhookController;
@@ -31,6 +32,9 @@ Route::prefix('v1')->group(function (): void {
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
+
+    Route::get('/auth/oauth/{provider}/redirect', [OAuthController::class, 'redirect']);
+    Route::get('/auth/oauth/{provider}/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
 
     Route::get('/jobs', [JobController::class, 'index']);
     Route::get('/jobs/statistics', [JobController::class, 'statistics']);
@@ -67,6 +71,7 @@ Route::prefix('v1')->group(function (): void {
 
         // Applications (candidate)
         Route::post('/jobs/{jobListing}/apply', [ApplicationController::class, 'store']);
+        Route::post('/jobs/{jobListing}/quick-apply', [ApplicationController::class, 'quickApply']);
         Route::get('/my-applications', [ApplicationController::class, 'index']);
         Route::delete('/applications/{application}', [ApplicationController::class, 'destroy']);
 

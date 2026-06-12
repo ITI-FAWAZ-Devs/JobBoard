@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { toast } from 'vue-sonner';
 import {
   BriefcaseBusiness,
@@ -19,6 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useProfile } from '@/Hooks/useProfile';
 import { updateProfileApi } from '@/api/profile';
+import { getOAuthConnectUrl } from '@/api/auth';
 import {
   createEducationApi,
   createExperienceApi,
@@ -308,6 +310,20 @@ const profileCompleteness = computed(() => {
 
   return Math.min(100, Math.max(35, 35 + filledFields * 10));
 });
+
+const isLinkedInConnected = computed(() => Boolean(user.value.profile?.linkedin_url));
+
+function handleConnectLinkedIn() {
+  window.location.href = getOAuthConnectUrl('linkedin');
+}
+
+const route = useRoute();
+onMounted(() => {
+  const connectError = route.query.connect_error;
+  if (typeof connectError === 'string' && connectError) {
+    toast.error(connectError);
+  }
+});
 </script>
 
 <template>
@@ -357,10 +373,23 @@ const profileCompleteness = computed(() => {
             </div>
 
             <div class="mt-4 flex flex-col gap-3">
-              <Button as-child class="flex items-center justify-center gap-2 rounded-lg bg-[#0A66C2] px-4 py-2 font-label-md text-label-md text-white hover:bg-[#095aa8]">
-                <a href="https://www.linkedin.com" target="_blank" rel="noreferrer">
+              <Button
+                v-if="!isLinkedInConnected"
+                class="flex items-center justify-center gap-2 rounded-lg bg-[#0A66C2] px-4 py-2 font-label-md text-label-md text-white hover:bg-[#095aa8]"
+                @click="handleConnectLinkedIn"
+              >
+                <BriefcaseBusiness class="h-4 w-4" aria-hidden="true" />
+                Connect LinkedIn
+              </Button>
+              <Button
+                v-else
+                as-child
+                variant="outline"
+                class="flex items-center justify-center gap-2 rounded-lg border-[#0A66C2]/40 px-4 py-2 font-label-md text-label-md text-[#0A66C2] hover:bg-[#0A66C2]/5"
+              >
+                <a :href="user.profile?.linkedin_url ?? '#'" target="_blank" rel="noreferrer">
                   <BriefcaseBusiness class="h-4 w-4" aria-hidden="true" />
-                  Connect LinkedIn
+                  LinkedIn Connected
                 </a>
               </Button>
               <Button variant="outline" class="rounded-lg border-outline-variant bg-surface-container px-4 py-2 font-label-md text-label-md text-on-surface hover:bg-surface-container-high" @click="isEditing = true">

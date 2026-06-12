@@ -136,7 +136,9 @@ class EmployerApplicationController extends Controller
                     'experience_years' => $application->candidateProfile?->experience_years,
                     'skills' => $application->candidateProfile?->skills,
                     'phone' => $isPaid ? $application->candidateProfile?->phone : null,
-                    'resume_url' => $isPaid ? $application->candidateProfile?->resume_url : null,
+                    'resume_url' => $isPaid
+                        ? ($application->resume_url ?? $application->candidateProfile?->resume_url)
+                        : null,
                 ],
             ] : null,
             'job' => $job ? [
